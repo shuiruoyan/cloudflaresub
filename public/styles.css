@@ -345,4 +345,8 @@ button.small {
     color: var(--muted);
     line-height: 1.8;
   }
+  
+  #resultSection {
+    margin-top: 24px;
+  }
 }
