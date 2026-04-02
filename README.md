@@ -6,38 +6,10 @@
 - 生成可分享的短链订阅（Raw / Clash / Surge）
 - Web 页面一键复制与二维码展示
 
-## 功能特性
-
-- 支持 `vmess`、`vless`、`trojan` 节点解析
-- 支持 Base64 订阅文本自动展开
-- 支持 `host[:port][#remark]` 格式的优选地址
-- 结果写入 Workers KV，生成 `/sub/:id` 短链
-- 相同输入自动去重（7 天 TTL）
-- 支持 `SUB_ACCESS_TOKEN` 访问令牌保护
-- 支持导出：Raw（Base64）/ Clash（YAML）/ Surge（文本）
-
-## 项目结构
-
-```text
-cloudflaresub/
-├─ src/
-│  ├─ worker.js      # Worker 入口（API + 订阅输出）
-│  └─ core.js        # 解析/渲染核心函数（测试使用）
-├─ public/           # 前端静态资源
-├─ tests/smoke.mjs   # Smoke test
-├─ wrangler.toml
-└─ package.json
-```
-
-## 环境要求
-
-- Node.js 18+
-- npm 9+
-- Cloudflare 账号
-- Wrangler 4+
-
 ## 快速开始（Cloudflare 网页端）
-
+```text
+视频部署流程：https://youtu.be/E5PI0LsQ43M
+```
 下面按 Cloudflare Dashboard 流程操作，尽量不依赖命令行。
 
 ### 1) 准备代码
@@ -106,6 +78,30 @@ cloudflaresub/
 - 如果你使用 GitHub 自动部署：直接 push 到对应分支，Cloudflare 会自动重新部署
 - 如果你不用 GitHub 自动部署：可在 Dashboard 在线编辑器中修改后手动部署
 
+
+## 功能特性
+
+- 支持 `vmess`、`vless`、`trojan` 节点解析
+- 支持 Base64 订阅文本自动展开
+- 支持 `host[:port][#remark]` 格式的优选地址
+- 结果写入 Workers KV，生成 `/sub/:id` 短链
+- 相同输入自动去重（7 天 TTL）
+- 支持 `SUB_ACCESS_TOKEN` 访问令牌保护
+- 支持导出：Raw（Base64）/ Clash（YAML）/ Surge（文本）
+
+## 项目结构
+
+```text
+cloudflaresub/
+├─ src/
+│  ├─ worker.js      # Worker 入口（API + 订阅输出）
+│  └─ core.js        # 解析/渲染核心函数（测试使用）
+├─ public/           # 前端静态资源
+├─ tests/smoke.mjs   # Smoke test
+├─ wrangler.toml
+└─ package.json
+```
+
 ## API 说明
 
 ### `POST /api/generate`
@@ -165,17 +161,6 @@ curl "https://<worker>/sub/<id>?target=clash&token=<SUB_ACCESS_TOKEN>"
 - 生成并展示各客户端订阅链接
 - 一键复制 / 生成二维码
 
-## 测试
-
-```bash
-npm run check
-```
-
-当前 smoke test 覆盖：
-- 节点解析
-- 节点扩展
-- 各格式渲染
-- `core.js` 加解密能力
 
 ## 注意事项
 
