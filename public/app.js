@@ -96,7 +96,6 @@ async function apiPost(path, body) {
 const form = document.getElementById('generator-form');
 const submitBtn = document.getElementById('submitBtn');
 const rotateUrlBtn = document.getElementById('rotateUrlBtn');
-const fillDemoBtn = document.getElementById('fillDemoBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const resultSection = document.getElementById('resultSection');
 const warningBox = document.getElementById('warningBox');
@@ -114,23 +113,6 @@ const qrModal = document.getElementById('qrModal');
 const qrCanvas = document.getElementById('qrCanvas');
 const qrText = document.getElementById('qrText');
 const closeQrModal = document.getElementById('closeQrModal');
-
-const demoVmess = [
-  'vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJkZW1vLXdzLXRscyIsCiAgImFkZCI6ICJlZGdlLmV4YW1wbGUuY29tIiwKICAicG9ydCI6ICI0NDMiLAogICJpZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJzY3kiOiAiYXV0byIsCiAgIm5ldCI6ICJ3cyIsCiAgInRscyI6ICJ0bHMiLAogICJwYXRoIjogIi93cyIsCiAgImhvc3QiOiAiZWRnZS5leGFtcGxlLmNvbSIsCiAgInNuaSI6ICJlZGdlLmV4YW1wbGUuY29tIiwKICAiZnAiOiAiY2hyb21lIiwKICAiYWxwbiI6ICJoMixodHRwLzEuMSIKfQ=='
-].join('\n');
-
-const demoIps = [
-  '104.16.1.2#HK-01',
-  '104.17.2.3#HK-02',
-  '104.18.3.4:2053#US-Edge'
-].join('\n');
-
-fillDemoBtn.addEventListener('click', () => {
-  document.getElementById('nodeLinks').value = demoVmess;
-  document.getElementById('preferredIps').value = demoIps;
-  document.getElementById('namePrefix').value = 'CF';
-  document.getElementById('keepOriginalHost').checked = true;
-});
 
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);

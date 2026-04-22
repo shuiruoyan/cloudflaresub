@@ -1,18 +1,18 @@
 :root {
   color-scheme: dark;
-  --bg: #050810;
-  --card: rgba(8, 12, 24, 0.92);
-  --card-border: rgba(0, 212, 170, 0.1);
-  --line: rgba(0, 212, 170, 0.08);
-  --text: #e8ecf1;
-  --muted: #6b7a90;
-  --accent: #00d4aa;
-  --accent-dim: rgba(0, 212, 170, 0.12);
-  --warning: #ff9f43;
-  --danger: #ff6b6b;
+  --bg: #0c0e14;
+  --card: rgba(16, 19, 28, 0.92);
+  --card-border: rgba(143, 168, 216, 0.1);
+  --line: rgba(143, 168, 216, 0.08);
+  --text: #d8dce6;
+  --muted: #6b7289;
+  --accent: #8fa8d8;
+  --accent-dim: rgba(143, 168, 216, 0.12);
+  --warning: #d4a86a;
+  --danger: #c97b7b;
   --shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
 
-  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: "Sora", "Noto Sans SC", sans-serif;
 }
 
 * {
@@ -24,15 +24,10 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(0, 212, 170, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(0, 100, 80, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 25% 0%, rgba(143, 168, 216, 0.035) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 100%, rgba(100, 120, 170, 0.025) 0%, transparent 55%),
     var(--bg);
-  line-height: 1.6;
-  background-image:
-    linear-gradient(rgba(0, 212, 170, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 170, 0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
-  background-position: center top;
+  line-height: 1.65;
 }
 
 body::before {
@@ -45,8 +40,8 @@ body::before {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 212, 170, 0.008) 2px,
-    rgba(0, 212, 170, 0.008) 4px
+    rgba(143, 168, 216, 0.006) 2px,
+    rgba(143, 168, 216, 0.006) 4px
   );
 }
 
@@ -68,7 +63,7 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 212, 170, 0.35);
+  background: rgba(143, 168, 216, 0.35);
   border: 2px solid transparent;
   background-clip: padding-box;
 }
@@ -77,6 +72,10 @@ body::before {
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(107, 122, 144, 0.25) transparent;
+}
+
+h1, h2, h3, .eyebrow {
+  font-family: "Syne", "Noto Sans SC", sans-serif;
 }
 
 /* ===== Layout ===== */
@@ -144,7 +143,7 @@ p {
   width: 1.1em;
   height: 1.1em;
   flex: 0 0 auto;
-  filter: drop-shadow(0 0 8px rgba(0, 212, 170, 0.35));
+  filter: drop-shadow(0 0 8px rgba(143, 168, 216, 0.35));
 }
 
 .eyebrow {
@@ -167,8 +166,8 @@ p {
 
 .hero-note {
   padding: 16px 20px;
-  background: rgba(0, 212, 170, 0.04);
-  border: 1px solid rgba(0, 212, 170, 0.1);
+  background: rgba(143, 168, 216, 0.04);
+  border: 1px solid rgba(143, 168, 216, 0.1);
   border-radius: 4px;
   font-size: 0.85rem;
   max-width: 280px;
@@ -248,16 +247,17 @@ input[readonly] {
 
 textarea:focus,
 input[type="text"]:focus {
-  border-color: rgba(0, 212, 170, 0.35);
+  border-color: rgba(143, 168, 216, 0.35);
   box-shadow:
-    0 0 0 3px rgba(0, 212, 170, 0.04),
-    inset 0 1px 0 rgba(0, 212, 170, 0.02);
+    0 0 0 3px rgba(143, 168, 216, 0.04),
+    inset 0 1px 0 rgba(143, 168, 216, 0.02);
 }
 
 input[readonly] {
   background: rgba(5, 8, 16, 0.55);
   color: var(--muted);
   font-size: 0.78rem;
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
 .hint {
@@ -270,9 +270,10 @@ input[readonly] {
 
 .hint code {
   color: var(--accent);
-  background: rgba(0, 212, 170, 0.06);
+  background: rgba(143, 168, 216, 0.06);
   padding: 1px 5px;
   border-radius: 3px;
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 0.8em;
 }
 
@@ -334,7 +335,7 @@ button::before {
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(143, 168, 216, 0.1), transparent);
   transition: left 0.7s ease;
 }
 
@@ -343,9 +344,9 @@ button:hover::before {
 }
 
 button:hover {
-  background: rgba(0, 212, 170, 0.18);
-  border-color: rgba(0, 212, 170, 0.3);
-  box-shadow: 0 0 24px rgba(0, 212, 170, 0.08);
+  background: rgba(143, 168, 216, 0.18);
+  border-color: rgba(143, 168, 216, 0.3);
+  box-shadow: 0 0 24px rgba(143, 168, 216, 0.08);
   transform: translateY(-1px);
 }
 
@@ -382,19 +383,19 @@ button.small {
 }
 
 button.warning {
-  background: rgba(255, 159, 67, 0.1);
+  background: rgba(212, 168, 116, 0.1);
   color: var(--warning);
-  border-color: rgba(255, 159, 67, 0.25);
+  border-color: rgba(212, 168, 116, 0.25);
 }
 
 button.warning::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 159, 67, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 116, 0.08), transparent);
 }
 
 button.warning:hover {
-  background: rgba(255, 159, 67, 0.18);
-  border-color: rgba(255, 159, 67, 0.4);
-  box-shadow: 0 0 20px rgba(255, 159, 67, 0.08);
+  background: rgba(212, 168, 116, 0.18);
+  border-color: rgba(212, 168, 116, 0.4);
+  box-shadow: 0 0 20px rgba(212, 168, 116, 0.08);
 }
 
 /* ===== Tips / Sidebar ===== */
@@ -414,8 +415,8 @@ button.warning:hover {
 .client-box {
   padding: 16px 20px;
   border-radius: 4px;
-  background: rgba(0, 212, 170, 0.03);
-  border: 1px solid rgba(0, 212, 170, 0.08);
+  background: rgba(143, 168, 216, 0.03);
+  border: 1px solid rgba(143, 168, 216, 0.08);
   margin-top: 20px;
 }
 
@@ -470,8 +471,8 @@ button.warning:hover {
   gap: 12px;
   padding: 12px 16px;
   border-radius: 3px;
-  background: rgba(0, 212, 170, 0.05);
-  border: 1px solid rgba(0, 212, 170, 0.1);
+  background: rgba(143, 168, 216, 0.05);
+  border: 1px solid rgba(143, 168, 216, 0.1);
   font-size: 0.84rem;
 }
 
@@ -480,10 +481,10 @@ button.warning:hover {
 }
 
 .status-badge code {
-  background: rgba(0, 212, 170, 0.08);
+  background: rgba(143, 168, 216, 0.08);
   padding: 2px 8px;
   border-radius: 3px;
-  font-family: inherit;
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   color: var(--accent);
   font-size: 0.9em;
 }
@@ -524,7 +525,7 @@ button.warning:hover {
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 212, 170, 0.15) transparent;
+  scrollbar-color: rgba(143, 168, 216, 0.15) transparent;
 }
 
 .client-tabs::-webkit-scrollbar {
@@ -536,7 +537,7 @@ button.warning:hover {
 }
 
 .client-tabs::-webkit-scrollbar-thumb {
-  background: rgba(0, 212, 170, 0.15);
+  background: rgba(143, 168, 216, 0.15);
   border-radius: 2px;
 }
 
@@ -563,25 +564,25 @@ button.warning:hover {
 }
 
 .client-tab:hover {
-  border-color: rgba(0, 212, 170, 0.2);
-  background: rgba(0, 212, 170, 0.04);
+  border-color: rgba(143, 168, 216, 0.2);
+  background: rgba(143, 168, 216, 0.04);
   color: var(--text);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .client-tab:focus-visible {
-  outline: 2px solid rgba(0, 212, 170, 0.4);
+  outline: 2px solid rgba(143, 168, 216, 0.4);
   outline-offset: 2px;
 }
 
 .client-tab.active {
-  border-color: rgba(0, 212, 170, 0.35);
-  background: rgba(0, 212, 170, 0.08);
+  border-color: rgba(143, 168, 216, 0.35);
+  background: rgba(143, 168, 216, 0.08);
   color: var(--accent);
   box-shadow:
-    0 0 0 1px rgba(0, 212, 170, 0.05),
-    0 4px 16px rgba(0, 212, 170, 0.06);
+    0 0 0 1px rgba(143, 168, 216, 0.05),
+    0 4px 16px rgba(143, 168, 216, 0.06);
 }
 
 .client-tab.active::after {
@@ -606,15 +607,15 @@ button.warning:hover {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  background: rgba(0, 212, 170, 0.06);
-  border: 1px solid rgba(0, 212, 170, 0.1);
+  background: rgba(143, 168, 216, 0.06);
+  border: 1px solid rgba(143, 168, 216, 0.1);
 }
 
 .tab-icon img {
   width: 16px;
   height: 16px;
   display: block;
-  filter: drop-shadow(0 0 3px rgba(0, 212, 170, 0.15));
+  filter: drop-shadow(0 0 3px rgba(143, 168, 216, 0.15));
 }
 
 .tab-name {
@@ -642,7 +643,7 @@ button.warning:hover {
   align-items: center;
   gap: 0;
   border-radius: 4px;
-  border: 1px solid rgba(0, 212, 170, 0.15);
+  border: 1px solid rgba(143, 168, 216, 0.15);
   background: rgba(5, 8, 16, 0.7);
   overflow: hidden;
 }
@@ -663,7 +664,7 @@ button.warning:hover {
   padding: 14px 16px;
   font-size: 0.82rem;
   color: var(--text);
-  font-family: inherit;
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   outline: none;
   min-width: 0;
 }
@@ -693,9 +694,9 @@ button.warning:hover {
 .warning {
   padding: 14px 16px;
   border-radius: 3px;
-  background: rgba(255, 159, 67, 0.06);
-  border: 1px solid rgba(255, 159, 67, 0.12);
-  color: #ffd699;
+  background: rgba(212, 168, 116, 0.06);
+  border: 1px solid rgba(212, 168, 116, 0.12);
+  color: #e8d5b8;
   line-height: 1.75;
   white-space: pre-wrap;
   font-size: 0.86rem;
@@ -756,7 +757,7 @@ button.warning:hover {
   line-height: 1;
   color: var(--accent);
   font-weight: 700;
-  text-shadow: 0 0 20px rgba(0, 212, 170, 0.2);
+  text-shadow: 0 0 20px rgba(143, 168, 216, 0.2);
 }
 
 /* ===== Subscription Cards ===== */
@@ -782,7 +783,7 @@ button.warning:hover {
   left: 20px;
   right: 20px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(143, 168, 216, 0.2), transparent);
 }
 
 .sub-card-wide {
@@ -806,15 +807,15 @@ button.warning:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 212, 170, 0.06);
-  border: 1px solid rgba(0, 212, 170, 0.12);
+  background: rgba(143, 168, 216, 0.06);
+  border: 1px solid rgba(143, 168, 216, 0.12);
 }
 
 .client-icon img {
   width: 20px;
   height: 20px;
   display: block;
-  filter: drop-shadow(0 0 4px rgba(0, 212, 170, 0.2));
+  filter: drop-shadow(0 0 4px rgba(143, 168, 216, 0.2));
 }
 
 .client-meta h3 {
@@ -873,12 +874,12 @@ button.warning:hover {
 .table-wrap td {
   padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid rgba(0, 212, 170, 0.05);
+  border-bottom: 1px solid rgba(143, 168, 216, 0.05);
 }
 
 .table-wrap th {
   color: var(--accent);
-  background: rgba(0, 212, 170, 0.04);
+  background: rgba(143, 168, 216, 0.04);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1113,8 +1114,7 @@ button.warning:hover {
   z-index: 999;
   display: grid;
   place-items: center;
-  background: #050810;
-  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  background: #0c0e14;
   overflow: hidden;
 }
 
@@ -1131,8 +1131,8 @@ button.warning:hover {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 212, 170, 0.015) 2px,
-    rgba(0, 212, 170, 0.015) 4px
+    rgba(143, 168, 216, 0.015) 2px,
+    rgba(143, 168, 216, 0.015) 4px
   );
   animation: scanlineMove 12s linear infinite;
 }
@@ -1148,8 +1148,8 @@ button.warning:hover {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(0, 212, 170, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 170, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(143, 168, 216, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143, 168, 216, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
@@ -1164,7 +1164,7 @@ button.warning:hover {
   align-items: center;
   gap: 10px;
   font-size: 0.78rem;
-  color: #6b7a90;
+  color: #6b7289;
   letter-spacing: 0.08em;
 }
 
@@ -1172,8 +1172,8 @@ button.warning:hover {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #00d4aa;
-  box-shadow: 0 0 8px rgba(0, 212, 170, 0.5);
+  background: #8fa8d8;
+  box-shadow: 0 0 8px rgba(143, 168, 216, 0.5);
   animation: statusPulse 2.4s ease-in-out infinite;
 }
 
@@ -1192,12 +1192,12 @@ button.warning:hover {
 /* 卡片 */
 .login-card {
   background: rgba(8, 12, 24, 0.85);
-  border: 1px solid rgba(0, 212, 170, 0.12);
+  border: 1px solid rgba(143, 168, 216, 0.12);
   border-radius: 4px;
   padding: 44px 40px 32px;
   backdrop-filter: blur(20px);
   box-shadow:
-    0 0 0 1px rgba(0, 212, 170, 0.05),
+    0 0 0 1px rgba(143, 168, 216, 0.05),
     0 24px 64px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
   position: relative;
@@ -1210,7 +1210,7 @@ button.warning:hover {
   left: 40px;
   right: 40px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(143, 168, 216, 0.4), transparent);
 }
 
 /* 头部 */
@@ -1224,8 +1224,8 @@ button.warning:hover {
   height: 56px;
   margin: 0 auto 16px;
   border-radius: 12px;
-  background: rgba(0, 212, 170, 0.08);
-  border: 1px solid rgba(0, 212, 170, 0.15);
+  background: rgba(143, 168, 216, 0.08);
+  border: 1px solid rgba(143, 168, 216, 0.15);
   display: grid;
   place-items: center;
 }
@@ -1233,7 +1233,7 @@ button.warning:hover {
 .login-icon {
   width: 28px;
   height: 28px;
-  filter: drop-shadow(0 0 6px rgba(0, 212, 170, 0.3));
+  filter: drop-shadow(0 0 6px rgba(143, 168, 216, 0.3));
 }
 
 .login-title {
@@ -1246,15 +1246,15 @@ button.warning:hover {
 .login-title-main {
   font-size: 1.35rem;
   font-weight: 700;
-  color: #e8ecf1;
+  color: #d8dce6;
   letter-spacing: 0.04em;
-  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: "Syne", "Noto Sans SC", sans-serif;
 }
 
 .login-title-sub {
   font-size: 0.72rem;
   font-weight: 500;
-  color: #00d4aa;
+  color: #8fa8d8;
   letter-spacing: 0.25em;
   opacity: 0.7;
 }
@@ -1278,17 +1278,13 @@ button.warning:hover {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.12em;
-  color: #6b7a90;
+  color: #6b7289;
   text-transform: uppercase;
-}
-
-.input-label {
-  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 .input-id {
   font-size: 0.65rem;
-  color: rgba(0, 212, 170, 0.4);
+  color: rgba(143, 168, 216, 0.4);
   font-weight: 500;
 }
 
@@ -1303,8 +1299,8 @@ button.warning:hover {
   border-radius: 3px;
   padding: 14px 16px;
   font-size: 0.92rem;
-  color: #e8ecf1;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  color: #d8dce6;
+  font-family: inherit;
   letter-spacing: 0.02em;
   outline: none;
   transition: border-color 0.3s ease;
@@ -1316,7 +1312,7 @@ button.warning:hover {
 }
 
 .input-wrap input:focus {
-  border-color: rgba(0, 212, 170, 0.35);
+  border-color: rgba(143, 168, 216, 0.35);
 }
 
 .input-glow {
@@ -1325,7 +1321,7 @@ button.warning:hover {
   left: 50%;
   width: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #00d4aa, transparent);
+  background: linear-gradient(90deg, transparent, #8fa8d8, transparent);
   transition: width 0.4s ease, left 0.4s ease;
 }
 
@@ -1341,23 +1337,22 @@ button.warning:hover {
   padding: 16px;
   border: none;
   border-radius: 3px;
-  background: rgba(0, 212, 170, 0.1);
-  color: #00d4aa;
+  background: rgba(143, 168, 216, 0.1);
+  color: #8fa8d8;
   font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.15em;
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid rgba(0, 212, 170, 0.2);
-  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  border: 1px solid rgba(143, 168, 216, 0.2);
   margin-top: 4px;
 }
 
 .login-submit:hover {
-  background: rgba(0, 212, 170, 0.18);
-  border-color: rgba(0, 212, 170, 0.35);
-  box-shadow: 0 0 20px rgba(0, 212, 170, 0.1);
+  background: rgba(143, 168, 216, 0.18);
+  border-color: rgba(143, 168, 216, 0.35);
+  box-shadow: 0 0 20px rgba(143, 168, 216, 0.1);
 }
 
 .login-submit:disabled {
@@ -1371,7 +1366,7 @@ button.warning:hover {
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(143, 168, 216, 0.08), transparent);
   transition: left 0.6s ease;
 }
 
@@ -1382,15 +1377,14 @@ button.warning:hover {
 
 /* 错误提示 */
 .login-error {
-  color: #ff6b6b;
+  color: #c97b7b;
   font-size: 0.82rem;
   line-height: 1.6;
   text-align: center;
   padding: 8px 12px;
-  background: rgba(255, 107, 107, 0.06);
-  border: 1px solid rgba(255, 107, 107, 0.12);
+  background: rgba(201, 123, 123, 0.06);
+  border: 1px solid rgba(201, 123, 123, 0.12);
   border-radius: 3px;
-  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 /* 底部 */
@@ -1406,7 +1400,7 @@ button.warning:hover {
 .footer-line {
   width: 40px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(143, 168, 216, 0.3), transparent);
 }
 
 .login-footer span {
