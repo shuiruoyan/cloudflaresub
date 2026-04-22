@@ -177,7 +177,7 @@ async function loadConfig() {
           document.getElementById('statOutputNodes').textContent = data.counts.outputNodes;
         }
 
-        if (data.preview) {
+        if (data.preview && data.preview.length > 0) {
           previewBody.innerHTML = data.preview
             .map(
               (item) => `
@@ -191,6 +191,10 @@ async function loadConfig() {
                 </tr>`,
             )
             .join('');
+          document.getElementById('previewSection').classList.remove('hidden');
+        } else {
+          previewBody.innerHTML = '';
+          document.getElementById('previewSection').classList.add('hidden');
         }
       }
     }
@@ -233,19 +237,25 @@ form.addEventListener('submit', async (event) => {
     document.getElementById('statEndpoints').textContent = data.counts.preferredEndpoints;
     document.getElementById('statOutputNodes').textContent = data.counts.outputNodes;
 
-    previewBody.innerHTML = data.preview
-      .map(
-        (item) => `
-          <tr>
-            <td>${escapeHtml(item.name)}</td>
-            <td>${escapeHtml(item.type)}</td>
-            <td>${escapeHtml(item.server)}</td>
-            <td>${escapeHtml(String(item.port))}</td>
-            <td>${escapeHtml(item.host || '-')}</td>
-            <td>${escapeHtml(item.sni || '-')}</td>
-          </tr>`,
-      )
-      .join('');
+    if (data.preview && data.preview.length > 0) {
+      previewBody.innerHTML = data.preview
+        .map(
+          (item) => `
+            <tr>
+              <td>${escapeHtml(item.name)}</td>
+              <td>${escapeHtml(item.type)}</td>
+              <td>${escapeHtml(item.server)}</td>
+              <td>${escapeHtml(String(item.port))}</td>
+              <td>${escapeHtml(item.host || '-')}</td>
+              <td>${escapeHtml(item.sni || '-')}</td>
+            </tr>`,
+        )
+        .join('');
+      document.getElementById('previewSection').classList.remove('hidden');
+    } else {
+      previewBody.innerHTML = '';
+      document.getElementById('previewSection').classList.add('hidden');
+    }
 
     if (Array.isArray(data.warnings) && data.warnings.length) {
       warningBox.textContent = data.warnings.join('\n');

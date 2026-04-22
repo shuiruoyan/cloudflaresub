@@ -235,6 +235,7 @@ cf.example.com:443#US-Edge"
               <button type="button" data-copy-target="activeUrl">复制链接</button>
               <button type="button" class="secondary" data-qrcode-target="activeUrl">二维码</button>
             </div>
+            <p class="hint url-hint">Surge 格式当前以 VMess / Trojan 节点导出为主；VLESS 节点可能不兼容。</p>
           </div>
 
           <input id="autoUrl" class="hidden" readonly />
@@ -242,11 +243,9 @@ cf.example.com:443#US-Edge"
           <input id="clashUrl" class="hidden" readonly />
           <input id="surgeUrl" class="hidden" readonly />
           <input id="rocketUrl" class="hidden" readonly />
-
-          <p class="hint url-hint">Surge 格式当前以 VMess / Trojan 节点导出为主；VLESS 节点可能不兼容。</p>
         </div>
 
-        <div class="preview-wrap">
+        <div id="previewSection" class="preview-wrap hidden">
           <h3>预览前 20 个生成节点</h3>
           <div class="table-wrap">
             <table>

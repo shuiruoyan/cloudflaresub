@@ -443,7 +443,6 @@ button.warning:hover {
   border-radius: 3px;
   background: rgba(0, 212, 170, 0.05);
   border: 1px solid rgba(0, 212, 170, 0.1);
-  margin-bottom: 20px;
   font-size: 0.84rem;
 }
 
@@ -468,7 +467,7 @@ button.warning:hover {
 
 .url-gen-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -540,6 +539,11 @@ button.warning:hover {
   color: var(--text);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.client-tab:focus-visible {
+  outline: 2px solid rgba(0, 212, 170, 0.4);
+  outline-offset: 2px;
 }
 
 .client-tab.active {
@@ -922,8 +926,8 @@ button.warning:hover {
 }
 
 .qr-box {
-  width: 232px;
-  min-height: 232px;
+  width: 244px;
+  min-height: 244px;
   padding: 12px;
   border-radius: 4px;
   background: #fff;
