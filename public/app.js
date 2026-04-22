@@ -168,6 +168,7 @@ async function loadConfig() {
         urlStatus.classList.remove('hidden');
         populateUrls(data.fixedId);
         emptyState.classList.add('hidden');
+        document.getElementById('statsGrid').classList.remove('hidden');
         document.getElementById('urlGenerator').classList.remove('hidden');
 
         if (data.counts) {
@@ -225,6 +226,7 @@ form.addEventListener('submit', async (event) => {
     fixedIdDisplay.textContent = data.fixedId;
     urlStatus.classList.remove('hidden');
     emptyState.classList.add('hidden');
+    document.getElementById('statsGrid').classList.remove('hidden');
     document.getElementById('urlGenerator').classList.remove('hidden');
 
     document.getElementById('statInputNodes').textContent = data.counts.inputNodes;

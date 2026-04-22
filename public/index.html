@@ -173,75 +173,77 @@ cf.example.com:443#US-Edge"
 
         <div id="warningBox" class="warning hidden"></div>
 
-        <div id=”emptyState” class=”empty-state”>
-          还没有生成订阅。请先填写节点链接和优选 IP，然后点击”保存配置”。
+        <div id="emptyState" class="empty-state">
+          还没有生成订阅。请先填写节点链接和优选 IP，然后点击"保存配置"。
         </div>
 
-        <div id=”statsGrid” class=”stats-grid”>
-          <div class=”stat-card”>
-            <span class=”stat-label”>原始节点</span>
-            <strong id=”statInputNodes”>0</strong>
+        <div id="statsGrid" class="stats-grid hidden">
+          <div class="stat-card">
+            <span class="stat-label">原始节点</span>
+            <strong id="statInputNodes">0</strong>
           </div>
-          <div class=”stat-card”>
-            <span class=”stat-label”>优选地址</span>
-            <strong id=”statEndpoints”>0</strong>
+          <div class="stat-card">
+            <span class="stat-label">优选地址</span>
+            <strong id="statEndpoints">0</strong>
           </div>
-          <div class=”stat-card”>
-            <span class=”stat-label”>生成节点</span>
-            <strong id=”statOutputNodes”>0</strong>
+          <div class="stat-card">
+            <span class="stat-label">生成节点</span>
+            <strong id="statOutputNodes">0</strong>
           </div>
         </div>
 
-        <div id=”urlGenerator” class=”url-generator hidden”>
-          <div class=”url-gen-header”>
+        <div id="urlGenerator" class="url-generator hidden">
+          <div class="url-gen-header">
             <h3>选择客户端</h3>
-            <p class=”url-gen-desc”>切换下方客户端获取对应格式的订阅链接</p>
+            <p class="url-gen-desc">切换下方客户端获取对应格式的订阅链接</p>
           </div>
 
-          <div class=”client-tabs”>
-            <button type=”button” class=”client-tab active” data-target=”autoUrl”>
-              <div class=”tab-icon”><img src=”/icons/auto.svg” alt=”” /></div>
-              <span class=”tab-name”>自动</span>
-              <span class=”tab-desc”>通用格式</span>
+          <div class="client-tabs">
+            <button type="button" class="client-tab active" data-target="autoUrl">
+              <div class="tab-icon"><img src="/icons/auto.svg" alt="" /></div>
+              <span class="tab-name">自动</span>
+              <span class="tab-desc">通用格式</span>
             </button>
-            <button type=”button” class=”client-tab” data-target=”rawUrl”>
-              <div class=”tab-icon”><img src=”/icons/v2rayn.svg” alt=”” /></div>
-              <span class=”tab-name”>V2rayN</span>
-              <span class=”tab-desc”>v2rayNG</span>
+            <button type="button" class="client-tab" data-target="rawUrl">
+              <div class="tab-icon"><img src="/icons/v2rayn.svg" alt="" /></div>
+              <span class="tab-name">V2rayN</span>
+              <span class="tab-desc">v2rayNG</span>
             </button>
-            <button type=”button” class=”client-tab” data-target=”clashUrl”>
-              <div class=”tab-icon”><img src=”/icons/clash.svg” alt=”” /></div>
-              <span class=”tab-name”>Clash</span>
-              <span class=”tab-desc”>Mihomo</span>
+            <button type="button" class="client-tab" data-target="clashUrl">
+              <div class="tab-icon"><img src="/icons/clash.svg" alt="" /></div>
+              <span class="tab-name">Clash</span>
+              <span class="tab-desc">Mihomo</span>
             </button>
-            <button type=”button” class=”client-tab” data-target=”rocketUrl”>
-              <div class=”tab-icon”><img src=”/icons/shadowrocket.svg” alt=”” /></div>
-              <span class=”tab-name”>Shadowrocket</span>
-              <span class=”tab-desc”>iOS</span>
+            <button type="button" class="client-tab" data-target="rocketUrl">
+              <div class="tab-icon"><img src="/icons/shadowrocket.svg" alt="" /></div>
+              <span class="tab-name">小火箭</span>
+              <span class="tab-desc">iOS</span>
             </button>
-            <button type=”button” class=”client-tab” data-target=”surgeUrl”>
-              <div class=”tab-icon”><img src=”/icons/surge.svg” alt=”” /></div>
-              <span class=”tab-name”>Surge</span>
-              <span class=”tab-desc”>Profile</span>
+            <button type="button" class="client-tab" data-target="surgeUrl">
+              <div class="tab-icon"><img src="/icons/surge.svg" alt="" /></div>
+              <span class="tab-name">Surge</span>
+              <span class="tab-desc">Profile</span>
             </button>
           </div>
 
-          <div class=”url-display”>
-            <div class=”url-terminal”>
-              <span class=”url-prompt”>&gt;</span>
-              <input id=”activeUrl” readonly />
+          <div class="url-display">
+            <div class="url-terminal">
+              <span class="url-prompt">&gt;</span>
+              <input id="activeUrl" readonly />
             </div>
-            <div class=”url-actions”>
-              <button type=”button” data-copy-target=”activeUrl”>复制链接</button>
-              <button type=”button” class=”secondary” data-qrcode-target=”activeUrl”>二维码</button>
+            <div class="url-actions">
+              <button type="button" data-copy-target="activeUrl">复制链接</button>
+              <button type="button" class="secondary" data-qrcode-target="activeUrl">二维码</button>
             </div>
           </div>
 
-          <input id=”autoUrl” class=”hidden” readonly />
-          <input id=”rawUrl” class=”hidden” readonly />
-          <input id=”clashUrl” class=”hidden” readonly />
-          <input id=”surgeUrl” class=”hidden” readonly />
-          <input id=”rocketUrl” class=”hidden” readonly />
+          <input id="autoUrl" class="hidden" readonly />
+          <input id="rawUrl" class="hidden" readonly />
+          <input id="clashUrl" class="hidden" readonly />
+          <input id="surgeUrl" class="hidden" readonly />
+          <input id="rocketUrl" class="hidden" readonly />
+
+          <p class="hint url-hint">Surge 格式当前以 VMess / Trojan 节点导出为主；VLESS 节点可能不兼容。</p>
         </div>
 
         <div class="preview-wrap">
