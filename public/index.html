@@ -12,6 +12,23 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <div id="loginOverlay" class="login-overlay">
+      <div class="login-box card">
+        <p class="eyebrow">Access Control</p>
+        <h1 class="hero-title">
+          <img src="/icons/auto.svg" alt="logo" class="hero-logo" />
+          <span>访问验证</span>
+        </h1>
+        <p class="lead">请输入访问令牌以继续使用订阅生成器。</p>
+        <form id="login-form">
+          <label for="token">访问令牌</label>
+          <input id="token" type="password" placeholder="输入 SUB_ACCESS_TOKEN" required />
+          <button type="submit" id="loginBtn">验证并进入</button>
+          <div id="loginError" class="login-error hidden"></div>
+        </form>
+      </div>
+    </div>
+
     <main class="container">
       <section class="hero card">
         <div>

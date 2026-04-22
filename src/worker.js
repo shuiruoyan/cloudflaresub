@@ -751,16 +751,6 @@ export default {
         return handleSub(url, env);
       }
 
-      // Page access control
-      const isPage = url.pathname === '/' || url.pathname === '/index.html';
-      if (isPage) {
-        const tokenCheck = validateToken(request, url, env);
-        if (!tokenCheck.ok) {
-          const loginReq = new Request(new URL('/login.html', url), request);
-          return env.ASSETS.fetch(loginReq);
-        }
-      }
-
       return env.ASSETS.fetch(request);
     } catch (err) {
       return json({ ok: false, error: 'Worker 全局错误: ' + (err.message || String(err)) }, 500);

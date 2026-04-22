@@ -4,17 +4,19 @@ function getToken() {
   return localStorage.getItem(TOKEN_KEY) || '';
 }
 
-function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-  location.href = '/';
+function showLogin(errorMsg) {
+  const overlay = document.getElementById('loginOverlay');
+  const errorBox = document.getElementById('loginError');
+  overlay.classList.remove('hidden');
+  if (errorMsg) {
+    errorBox.textContent = errorMsg;
+    errorBox.classList.remove('hidden');
+  }
 }
 
-// Parse token from URL on first load
-const urlParams = new URLSearchParams(location.search);
-const urlToken = urlParams.get('t');
-if (urlToken) {
-  localStorage.setItem(TOKEN_KEY, urlToken);
-  history.replaceState({}, '', location.pathname);
+function hideLogin() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('loginError').classList.add('hidden');
 }
 
 // API helpers
@@ -23,8 +25,9 @@ async function apiGet(path) {
     headers: { 'x-sub-token': getToken() },
   });
   if (res.status === 403) {
-    clearToken();
-    throw new Error('登录已过期，请重新登录');
+    localStorage.removeItem(TOKEN_KEY);
+    showLogin('登录已过期，请重新输入令牌');
+    throw new Error('登录已过期');
   }
   return res;
 }
@@ -39,8 +42,9 @@ async function apiPost(path, body) {
     body: JSON.stringify(body),
   });
   if (res.status === 403) {
-    clearToken();
-    throw new Error('登录已过期，请重新登录');
+    localStorage.removeItem(TOKEN_KEY);
+    showLogin('登录已过期，请重新输入令牌');
+    throw new Error('登录已过期');
   }
   return res;
 }
@@ -85,7 +89,41 @@ fillDemoBtn.addEventListener('click', () => {
   document.getElementById('keepOriginalHost').checked = true;
 });
 
-logoutBtn.addEventListener('click', clearToken);
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem(TOKEN_KEY);
+  location.reload();
+});
+
+// Login form handling
+const loginForm = document.getElementById('login-form');
+const loginBtn = document.getElementById('loginBtn');
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorBox = document.getElementById('loginError');
+  errorBox.classList.add('hidden');
+  loginBtn.disabled = true;
+  loginBtn.textContent = '验证中...';
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token: document.getElementById('token').value }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '验证失败');
+
+    localStorage.setItem(TOKEN_KEY, document.getElementById('token').value);
+    hideLogin();
+    await loadConfig();
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.classList.remove('hidden');
+    loginBtn.disabled = false;
+    loginBtn.textContent = '验证并进入';
+  }
+});
 
 function populateUrls(fixedId) {
   const token = getToken();
@@ -321,4 +359,9 @@ function escapeHtml(value) {
 }
 
 // Initialize
-loadConfig();
+if (getToken()) {
+  hideLogin();
+  loadConfig();
+} else {
+  showLogin();
+}
