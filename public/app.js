@@ -119,6 +119,28 @@ async function loadConfig() {
         urlStatus.classList.remove('hidden');
         populateUrls(data.fixedId);
         emptyState.classList.add('hidden');
+
+        if (data.counts) {
+          document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
+          document.getElementById('statEndpoints').textContent = data.counts.preferredEndpoints;
+          document.getElementById('statOutputNodes').textContent = data.counts.outputNodes;
+        }
+
+        if (data.preview) {
+          previewBody.innerHTML = data.preview
+            .map(
+              (item) => `
+                <tr>
+                  <td>${escapeHtml(item.name)}</td>
+                  <td>${escapeHtml(item.type)}</td>
+                  <td>${escapeHtml(item.server)}</td>
+                  <td>${escapeHtml(String(item.port))}</td>
+                  <td>${escapeHtml(item.host || '-')}</td>
+                  <td>${escapeHtml(item.sni || '-')}</td>
+                </tr>`,
+            )
+            .join('');
+        }
       }
     }
   } catch (err) {

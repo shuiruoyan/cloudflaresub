@@ -453,12 +453,37 @@ async function handleGetSubscription(request, env, url) {
   }
 
   const data = JSON.parse(dataRaw);
-  return json({
+  const result = {
     ok: true,
     exists: true,
     config: data,
     fixedId: fixedId || null,
-  });
+  };
+
+  if (fixedId) {
+    const subRaw = await env.SUB_STORE.get(`sub:${fixedId}`);
+    if (subRaw) {
+      const sub = JSON.parse(subRaw);
+      const nodes = sub.nodes || [];
+      const baseNodes = parseRawLinks(data.nodeLinks || '');
+      const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+      result.counts = {
+        inputNodes: baseNodes.length,
+        preferredEndpoints: preferredEndpoints.length,
+        outputNodes: nodes.length,
+      };
+      result.preview = nodes.slice(0, 20).map((node) => ({
+        name: node.name,
+        type: node.type,
+        server: node.server,
+        port: node.port,
+        host: node.host || '',
+        sni: node.sni || '',
+      }));
+    }
+  }
+
+  return json(result);
 }
 
 async function handleUpdateSubscription(request, env, url) {
