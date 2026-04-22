@@ -386,6 +386,18 @@ document.addEventListener('click', async (event) => {
 
 closeQrModal.addEventListener('click', closeQrDialog);
 
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (!qrModal.classList.contains('hidden')) {
+      closeQrDialog();
+    }
+    const confirmModal = document.getElementById('confirmModal');
+    if (confirmModal && !confirmModal.classList.contains('hidden')) {
+      confirmModal.querySelector('#confirmCancel')?.click();
+    }
+  }
+});
+
 function closeQrDialog() {
   qrModal.classList.add('hidden');
   qrModal.setAttribute('aria-hidden', 'true');
