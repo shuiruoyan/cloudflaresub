@@ -282,6 +282,21 @@ cf.example.com:443#US-Edge"
         </div>
       </div>
     </div>
+
+    <div id="confirmModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <div class="modal-dialog confirm-dialog" role="dialog" aria-modal="true">
+        <div class="modal-body">
+          <p id="confirmMessage" class="confirm-message"></p>
+          <div class="confirm-actions">
+            <button id="confirmCancel" type="button" class="secondary">取消</button>
+            <button id="confirmOk" type="button">确定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> 
     <script type="module" src="/app.js"></script>
   </body>

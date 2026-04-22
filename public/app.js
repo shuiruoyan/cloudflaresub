@@ -4,6 +4,49 @@ function getToken() {
   return localStorage.getItem(TOKEN_KEY) || '';
 }
 
+const toastContainer = document.getElementById('toastContainer');
+
+function showToast(message, type = 'info', duration = 3000) {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('toast-exit');
+    toast.addEventListener('animationend', () => toast.remove());
+  }, duration);
+}
+
+function showConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('confirmModal');
+    const msgEl = document.getElementById('confirmMessage');
+    const okBtn = document.getElementById('confirmOk');
+    const cancelBtn = document.getElementById('confirmCancel');
+
+    msgEl.textContent = message;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+
+    const cleanup = () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      backdrop.removeEventListener('click', onCancel);
+    };
+
+    const onOk = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    const backdrop = modal.querySelector('[data-close-modal="true"]');
+    backdrop.addEventListener('click', onCancel);
+  });
+}
+
 function showLogin(errorMsg) {
   const overlay = document.getElementById('loginOverlay');
   const errorBox = document.getElementById('loginError');
@@ -122,6 +165,7 @@ loginForm.addEventListener('submit', async (e) => {
     hideLogin();
     await loadConfig();
   } catch (err) {
+    showToast(err.message, 'error');
     errorBox.textContent = err.message;
     errorBox.classList.remove('hidden');
     loginBtn.disabled = false;
@@ -199,8 +243,7 @@ async function loadConfig() {
       }
     }
   } catch (err) {
-    warningBox.textContent = err.message;
-    warningBox.classList.remove('hidden');
+    showToast(err.message, 'error');
   }
 }
 
@@ -258,19 +301,16 @@ form.addEventListener('submit', async (event) => {
     }
 
     if (Array.isArray(data.warnings) && data.warnings.length) {
-      warningBox.textContent = data.warnings.join('\n');
-      warningBox.classList.remove('hidden');
+      showToast(data.warnings.join('\n'), 'warning', 5000);
     }
 
     if (data.isNew) {
-      warningBox.textContent = '首次保存，已生成订阅链接。';
-      warningBox.classList.remove('hidden');
+      showToast('首次保存，已生成订阅链接。', 'success');
     }
 
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
-    warningBox.textContent = error.message || '请求失败';
-    warningBox.classList.remove('hidden');
+    showToast(error.message || '请求失败', 'error');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '保存配置';
@@ -278,10 +318,8 @@ form.addEventListener('submit', async (event) => {
 });
 
 rotateUrlBtn.addEventListener('click', async () => {
-  warningBox.classList.add('hidden');
-  if (!confirm('更新订阅URL后，旧链接将失效。客户端需要重新配置。确定继续？')) {
-    return;
-  }
+  const confirmed = await showConfirm('更新订阅URL后，旧链接将失效。客户端需要重新配置。确定继续？');
+  if (!confirmed) return;
 
   rotateUrlBtn.disabled = true;
   rotateUrlBtn.textContent = '更新中...';
@@ -296,12 +334,10 @@ rotateUrlBtn.addEventListener('click', async () => {
     populateUrls(data.fixedId);
     fixedIdDisplay.textContent = data.fixedId;
 
-    warningBox.textContent = '订阅URL已更新，请复制新链接到客户端。';
-    warningBox.classList.remove('hidden');
+    showToast('订阅URL已更新，请复制新链接到客户端。', 'success');
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
-    warningBox.textContent = error.message || '请求失败';
-    warningBox.classList.remove('hidden');
+    showToast(error.message || '请求失败', 'error');
   } finally {
     rotateUrlBtn.disabled = false;
     rotateUrlBtn.textContent = '更新订阅URL';
@@ -318,6 +354,7 @@ document.addEventListener('click', async (event) => {
     }
     try {
       await navigator.clipboard.writeText(input.value);
+      showToast('链接已复制到剪贴板', 'success');
       const originalText = copyButton.textContent;
       copyButton.textContent = '已复制';
       setTimeout(() => {
@@ -326,24 +363,21 @@ document.addEventListener('click', async (event) => {
     } catch {
       input.select();
       document.execCommand('copy');
+      showToast('链接已复制到剪贴板', 'success');
     }
     return;
   }
 
   const qrButton = event.target.closest('[data-qrcode-target]');
   if (qrButton) {
-    warningBox.classList.add('hidden');
-
     const input = document.getElementById(qrButton.dataset.qrcodeTarget);
     if (!input?.value) {
-      warningBox.textContent = '请先生成订阅链接，再显示二维码。';
-      warningBox.classList.remove('hidden');
+      showToast('请先生成订阅链接，再显示二维码。', 'warning');
       return;
     }
 
     if (!window.QRCode) {
-      warningBox.textContent = '二维码组件加载失败，请刷新页面后重试。';
-      warningBox.classList.remove('hidden');
+      showToast('二维码组件加载失败，请刷新页面后重试。', 'error');
       return;
     }
 
