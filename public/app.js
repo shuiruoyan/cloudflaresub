@@ -142,6 +142,13 @@ function populateUrls(fixedId) {
   document.getElementById('rocketUrl').value = withToken('raw');
   clashUrl.value = withToken('clash');
   surgeUrl.value = withToken('surge');
+
+  // 同步当前激活选项卡对应的链接到 activeUrl
+  const activeTab = document.querySelector('.client-tab.active');
+  if (activeTab) {
+    const source = document.getElementById(activeTab.dataset.target);
+    if (source) document.getElementById('activeUrl').value = source.value;
+  }
 }
 
 async function loadConfig() {
@@ -161,6 +168,7 @@ async function loadConfig() {
         urlStatus.classList.remove('hidden');
         populateUrls(data.fixedId);
         emptyState.classList.add('hidden');
+        document.getElementById('urlGenerator').classList.remove('hidden');
 
         if (data.counts) {
           document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
@@ -217,6 +225,7 @@ form.addEventListener('submit', async (event) => {
     fixedIdDisplay.textContent = data.fixedId;
     urlStatus.classList.remove('hidden');
     emptyState.classList.add('hidden');
+    document.getElementById('urlGenerator').classList.remove('hidden');
 
     document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
     document.getElementById('statEndpoints').textContent = data.counts.preferredEndpoints;
@@ -361,6 +370,16 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
+
+// 客户端选项卡切换
+document.querySelectorAll('.client-tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.client-tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    const source = document.getElementById(tab.dataset.target);
+    if (source) document.getElementById('activeUrl').value = source.value;
+  });
+});
 
 // Initialize
 if (getToken()) {
