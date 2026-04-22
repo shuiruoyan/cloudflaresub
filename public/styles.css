@@ -623,7 +623,10 @@ button.warning:disabled {
   z-index: 999;
   display: grid;
   place-items: center;
-  background: linear-gradient(180deg, #08101e 0%, #0b1220 100%);
+  background:
+    radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 30%),
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 26%),
+    linear-gradient(180deg, #08101e 0%, #0b1220 100%);
 }
 
 .login-overlay.hidden {
@@ -631,32 +634,60 @@ button.warning:disabled {
 }
 
 .login-box {
-  width: min(420px, calc(100% - 32px));
-  padding: 32px;
+  width: min(400px, calc(100% - 32px));
+  padding: 36px;
 }
 
-.login-box .hero-title {
-  font-size: 1.5rem;
-  margin-bottom: 8px;
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
 }
 
-.login-box .lead {
+.login-logo {
+  width: 44px;
+  height: 44px;
+}
+
+.login-brand h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.login-brand p {
+  margin: 4px 0 0;
   color: var(--muted);
-  margin-bottom: 24px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
-.login-box input[type="password"] {
-  margin-bottom: 18px;
+.login-form {
+  display: grid;
+  gap: 16px;
 }
 
-.login-box button {
+.login-form .field {
+  display: grid;
+  gap: 8px;
+}
+
+.login-form label {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.login-form input {
+  margin: 0;
+}
+
+.login-form button {
   width: 100%;
+  margin-top: 4px;
 }
 
 .login-error {
   color: var(--danger);
   font-size: 0.92rem;
-  margin-top: 12px;
   line-height: 1.6;
+  text-align: center;
 }

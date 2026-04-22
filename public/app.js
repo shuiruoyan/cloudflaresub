@@ -103,25 +103,29 @@ loginForm.addEventListener('submit', async (e) => {
   const errorBox = document.getElementById('loginError');
   errorBox.classList.add('hidden');
   loginBtn.disabled = true;
-  loginBtn.textContent = '验证中...';
+  loginBtn.textContent = '登录中...';
 
   try {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ token: document.getElementById('token').value }),
+      body: JSON.stringify({
+        username: document.getElementById('loginUser').value,
+        password: document.getElementById('loginPass').value,
+      }),
     });
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || '验证失败');
+    if (!data.ok) throw new Error(data.error || '登录失败');
 
-    localStorage.setItem(TOKEN_KEY, document.getElementById('token').value);
+    // 登录成功后，保存一个标记到 localStorage（实际API调用仍需输密码）
+    localStorage.setItem(TOKEN_KEY, 'authenticated');
     hideLogin();
     await loadConfig();
   } catch (err) {
     errorBox.textContent = err.message;
     errorBox.classList.remove('hidden');
     loginBtn.disabled = false;
-    loginBtn.textContent = '验证并进入';
+    loginBtn.textContent = '登录';
   }
 });
 

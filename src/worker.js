@@ -1,7 +1,9 @@
 // Cloudflare Worker: Fixed subscription URL with token protection
 // Requires:
 // - KV namespace binding: SUB_STORE
-// - Secret/Variable: ADMIN_PASSWORD
+// - Secret/Variable: AUTHOR_NAME (登录用户名)
+// - Secret/Variable: ADMIN_PASSWORD (登录密码)
+// - Secret/Variable: SUB_ACCESS_TOKEN (订阅链接访问令牌)
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -412,7 +414,7 @@ function getProvidedToken(request, url) {
 }
 
 function validateToken(request, url, env) {
-  const expected = env.ADMIN_PASSWORD;
+  const expected = env.SUB_ACCESS_TOKEN;
   if (!expected) return { ok: true };
   const provided = getProvidedToken(request, url);
   if (!provided || provided !== expected) {
@@ -437,13 +439,14 @@ async function handleLogin(request, env) {
       return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
     }
 
-    const expected = env.ADMIN_PASSWORD;
-    if (!expected) {
-      return json({ ok: true, warning: '未配置访问令牌，任何人都可以访问' });
+    const expectedName = env.AUTHOR_NAME;
+    const expectedPass = env.ADMIN_PASSWORD;
+    if (!expectedName || !expectedPass) {
+      return json({ ok: true, warning: '未配置 AUTHOR_NAME 或 ADMIN_PASSWORD，任何人都可以访问' });
     }
 
-    if (body.token !== expected) {
-      return json({ ok: false, error: '令牌错误' }, 403);
+    if (body.username !== expectedName || body.password !== expectedPass) {
+      return json({ ok: false, error: '用户名或密码错误' }, 403);
     }
 
     return json({ ok: true });
@@ -559,7 +562,7 @@ async function handleUpdateSubscription(request, env, url) {
     await env.SUB_STORE.put(`sub:${fixedId}`, JSON.stringify(payload));
 
     const origin = url.origin;
-    const accessToken = env.ADMIN_PASSWORD || '';
+    const accessToken = env.SUB_ACCESS_TOKEN || '';
     const withToken = (target) =>
       `${origin}/sub/${fixedId}${
         target
@@ -590,7 +593,7 @@ async function handleUpdateSubscription(request, env, url) {
         host: node.host || '',
         sni: node.sni || '',
       })),
-      warnings: accessToken ? [] : ['未检测到 ADMIN_PASSWORD，订阅链接将没有访问保护。'],
+      warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有访问保护。'],
     });
   } catch (err) {
     return json({ ok: false, error: '保存配置错误: ' + (err.message || String(err)) }, 500);
@@ -659,7 +662,7 @@ async function handleUpdateUrl(request, env, url) {
     await env.SUB_STORE.put('sub:fixed-id', newId);
 
     const origin = url.origin;
-    const accessToken = env.ADMIN_PASSWORD || '';
+    const accessToken = env.SUB_ACCESS_TOKEN || '';
     const withToken = (target) =>
       `${origin}/sub/${newId}${
         target
@@ -705,7 +708,7 @@ async function handleSub(url, env) {
     }
     if (target === 'surge') {
       return text(
-        renderSurge(nodes, url.origin + url.pathname, env.ADMIN_PASSWORD || ''),
+        renderSurge(nodes, url.origin + url.pathname, env.SUB_ACCESS_TOKEN || ''),
         200,
         'text/plain; charset=utf-8',
       );

@@ -14,16 +14,23 @@
   <body>
     <div id="loginOverlay" class="login-overlay">
       <div class="login-box card">
-        <p class="eyebrow">Access Control</p>
-        <h1 class="hero-title">
-          <img src="/icons/auto.svg" alt="logo" class="hero-logo" />
-          <span>访问验证</span>
-        </h1>
-        <p class="lead">请输入访问令牌以继续使用订阅生成器。</p>
-        <form id="login-form">
-          <label for="token">访问令牌</label>
-          <input id="token" type="password" placeholder="输入 ADMIN_PASSWORD" required />
-          <button type="submit" id="loginBtn">验证并进入</button>
+        <div class="login-brand">
+          <img src="/icons/auto.svg" alt="logo" class="login-logo" />
+          <div>
+            <h2>优选IP订阅生成器</h2>
+            <p>安全登录</p>
+          </div>
+        </div>
+        <form id="login-form" class="login-form">
+          <div class="field">
+            <label for="loginUser">用户名</label>
+            <input id="loginUser" type="text" placeholder="输入用户名" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label for="loginPass">密码</label>
+            <input id="loginPass" type="password" placeholder="输入密码" autocomplete="current-password" required />
+          </div>
+          <button type="submit" id="loginBtn">登录</button>
           <div id="loginError" class="login-error hidden"></div>
         </form>
       </div>
