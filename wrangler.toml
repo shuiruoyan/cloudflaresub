@@ -3,6 +3,13 @@ main = "src/worker.js"
 compatibility_date = "2026-03-06"
 workers_dev = true
 
+# KV namespace 用于存储订阅数据
+# 请先执行: wrangler kv:namespace create "SUB_STORE"
+# 然后把返回的 id 填到下面
+[[kv_namespaces]]
+binding = "SUB_STORE"
+id = "YOUR_KV_NAMESPACE_ID_HERE"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
