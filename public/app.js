@@ -288,6 +288,8 @@ form.addEventListener('submit', async (event) => {
 
     if (data.isNew) {
       showToast('首次保存，已生成订阅链接。', 'success');
+    } else {
+      showToast('配置已保存', 'success');
     }
 
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
