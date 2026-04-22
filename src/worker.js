@@ -449,7 +449,7 @@ async function handleLogin(request, env) {
       return json({ ok: false, error: '用户名或密码错误' }, 403);
     }
 
-    return json({ ok: true });
+    return json({ ok: true, token: env.SUB_ACCESS_TOKEN || '' });
   } catch (err) {
     return json({ ok: false, error: '登录处理错误: ' + (err.message || String(err)) }, 500);
   }

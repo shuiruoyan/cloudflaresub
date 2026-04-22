@@ -118,7 +118,7 @@ loginForm.addEventListener('submit', async (e) => {
     if (!data.ok) throw new Error(data.error || '登录失败');
 
     // 登录成功后，保存一个标记到 localStorage（实际API调用仍需输密码）
-    localStorage.setItem(TOKEN_KEY, 'authenticated');
+    localStorage.setItem(TOKEN_KEY, data.token || '');
     hideLogin();
     await loadConfig();
   } catch (err) {
