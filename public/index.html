@@ -81,9 +81,15 @@
             只做三件事：导入自建节点、批量替换为优选 IP、输出可导入主流客户端的订阅链接。
           </p>
         </div>
-        <div class="hero-note">
-          <strong>适合场景</strong>
-          <p>3X-UI / Xray / VPS 自建节点 + 你自己找好的 Cloudflare 优选 IP。</p>
+        <div class="hero-side">
+          <button id="themeToggle" type="button" class="theme-toggle" aria-label="切换主题">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <div class="hero-note">
+            <strong>适合场景</strong>
+            <p>3X-UI / Xray / VPS 自建节点 + 你自己找好的 Cloudflare 优选 IP。</p>
+          </div>
         </div>
       </section>
 
@@ -176,19 +182,12 @@ cf.example.com:443#US-Edge"
           还没有生成订阅。请先填写节点链接和优选 IP，然后点击"保存配置"。
         </div>
 
-        <div id="statsGrid" class="stats-grid hidden">
-          <div class="stat-card">
-            <span class="stat-label">原始节点</span>
-            <strong id="statInputNodes">0</strong>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">优选地址</span>
-            <strong id="statEndpoints">0</strong>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">生成节点</span>
-            <strong id="statOutputNodes">0</strong>
-          </div>
+        <div id="statsBar" class="stats-bar hidden">
+          <span class="stat-item">原始节点 <strong id="statInputNodes">0</strong></span>
+          <span class="stat-divider"></span>
+          <span class="stat-item">优选地址 <strong id="statEndpoints">0</strong></span>
+          <span class="stat-divider"></span>
+          <span class="stat-item">生成节点 <strong id="statOutputNodes">0</strong></span>
         </div>
 
         <div id="urlGenerator" class="url-generator hidden">

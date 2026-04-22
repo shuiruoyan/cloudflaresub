@@ -194,7 +194,7 @@ async function loadConfig() {
         urlStatus.classList.remove('hidden');
         populateUrls(data.fixedId);
         emptyState.classList.add('hidden');
-        document.getElementById('statsGrid').classList.remove('hidden');
+        document.getElementById('statsBar').classList.remove('hidden');
         document.getElementById('urlGenerator').classList.remove('hidden');
 
         if (data.counts) {
@@ -255,7 +255,7 @@ form.addEventListener('submit', async (event) => {
     fixedIdDisplay.textContent = data.fixedId;
     urlStatus.classList.remove('hidden');
     emptyState.classList.add('hidden');
-    document.getElementById('statsGrid').classList.remove('hidden');
+    document.getElementById('statsBar').classList.remove('hidden');
     document.getElementById('urlGenerator').classList.remove('hidden');
 
     document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
@@ -410,6 +410,26 @@ document.querySelectorAll('.client-tab').forEach((tab) => {
     if (source) document.getElementById('activeUrl').value = source.value;
   });
 });
+
+// Theme toggle
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light' || saved === 'dark') {
+    document.documentElement.dataset.theme = saved;
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    document.documentElement.dataset.theme = 'light';
+  }
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.dataset.theme === 'light' ? 'dark' : 'light';
+  html.dataset.theme = next;
+  localStorage.setItem('theme', next);
+}
+
+initTheme();
+document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
 
 // Initialize
 if (getToken()) {
