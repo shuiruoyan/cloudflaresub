@@ -9,30 +9,62 @@
       content="将自建 vmess/vless/trojan 节点批量替换为优选 IP，并导出 Clash、V2rayN、Shadowrocket、Surge 可用订阅链接。"
     />
     <link rel="icon" href="/icons/auto.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div id="loginOverlay" class="login-overlay">
-      <div class="login-box card">
-        <div class="login-brand">
-          <img src="/icons/auto.svg" alt="logo" class="login-logo" />
-          <div>
-            <h2>优选IP订阅生成器</h2>
-            <p>安全登录</p>
+      <div class="login-scanline"></div>
+      <div class="login-grid"></div>
+      <div class="login-container">
+        <div class="login-status-bar">
+          <span class="status-dot"></span>
+          <span class="status-text">等待接入</span>
+        </div>
+        <div class="login-card">
+          <div class="login-header">
+            <div class="login-icon-wrap">
+              <img src="/icons/auto.svg" alt="logo" class="login-icon" />
+            </div>
+            <h1 class="login-title">
+              <span class="login-title-main">节点控制台</span>
+              <span class="login-title-sub">NODE CONSOLE</span>
+            </h1>
+          </div>
+          <form id="login-form" class="login-form">
+            <div class="input-group">
+              <label for="loginUser">
+                <span class="input-label">身份标识</span>
+                <span class="input-id">01</span>
+              </label>
+              <div class="input-wrap">
+                <input id="loginUser" type="text" placeholder="AUTHOR_NAME" autocomplete="username" required />
+                <div class="input-glow"></div>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="loginPass">
+                <span class="input-label">安全密钥</span>
+                <span class="input-id">02</span>
+              </label>
+              <div class="input-wrap">
+                <input id="loginPass" type="password" placeholder="ADMIN_PASSWORD" autocomplete="current-password" required />
+                <div class="input-glow"></div>
+              </div>
+            </div>
+            <button type="submit" id="loginBtn" class="login-submit">
+              <span class="btn-text">建立连接</span>
+              <span class="btn-shine"></span>
+            </button>
+            <div id="loginError" class="login-error hidden"></div>
+          </form>
+          <div class="login-footer">
+            <div class="footer-line"></div>
+            <span>优选IP订阅生成器 v2.0</span>
           </div>
         </div>
-        <form id="login-form" class="login-form">
-          <div class="field">
-            <label for="loginUser">用户名</label>
-            <input id="loginUser" type="text" placeholder="输入用户名" autocomplete="username" required />
-          </div>
-          <div class="field">
-            <label for="loginPass">密码</label>
-            <input id="loginPass" type="password" placeholder="输入密码" autocomplete="current-password" required />
-          </div>
-          <button type="submit" id="loginBtn">登录</button>
-          <div id="loginError" class="login-error hidden"></div>
-        </form>
       </div>
     </div>
 

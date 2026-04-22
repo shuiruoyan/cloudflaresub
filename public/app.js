@@ -103,7 +103,7 @@ loginForm.addEventListener('submit', async (e) => {
   const errorBox = document.getElementById('loginError');
   errorBox.classList.add('hidden');
   loginBtn.disabled = true;
-  loginBtn.textContent = '登录中...';
+  loginBtn.textContent = '验证中...';
 
   try {
     const res = await fetch('/api/login', {

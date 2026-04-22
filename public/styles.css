@@ -616,78 +616,311 @@ button.warning:disabled {
   }
 }
 
-/* ===== 登录覆盖层 ===== */
+/* ===== 登录覆盖层：网络节点控制台 ===== */
 .login-overlay {
   position: fixed;
   inset: 0;
   z-index: 999;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 30%),
-    radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 26%),
-    linear-gradient(180deg, #08101e 0%, #0b1220 100%);
+  background: #050810;
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  overflow: hidden;
 }
 
 .login-overlay.hidden {
   display: none !important;
 }
 
-.login-box {
-  width: min(400px, calc(100% - 32px));
-  padding: 36px;
+/* 扫描线效果 */
+.login-scanline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 212, 170, 0.015) 2px,
+    rgba(0, 212, 170, 0.015) 4px
+  );
+  animation: scanlineMove 12s linear infinite;
 }
 
-.login-brand {
+@keyframes scanlineMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* 网格背景 */
+.login-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 212, 170, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 170, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+}
+
+/* 状态栏 */
+.login-status-bar {
+  position: absolute;
+  top: 24px;
+  left: 28px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 28px;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: #6b7a90;
+  letter-spacing: 0.08em;
 }
 
-.login-logo {
-  width: 44px;
-  height: 44px;
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00d4aa;
+  box-shadow: 0 0 8px rgba(0, 212, 170, 0.5);
+  animation: statusPulse 2.4s ease-in-out infinite;
 }
 
-.login-brand h2 {
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* 主容器 */
+.login-container {
+  position: relative;
+  z-index: 2;
+  width: min(440px, calc(100% - 40px));
+}
+
+/* 卡片 */
+.login-card {
+  background: rgba(8, 12, 24, 0.85);
+  border: 1px solid rgba(0, 212, 170, 0.12);
+  border-radius: 4px;
+  padding: 44px 40px 32px;
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 0 0 1px rgba(0, 212, 170, 0.05),
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  position: relative;
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 40px;
+  right: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.4), transparent);
+}
+
+/* 头部 */
+.login-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-icon-wrap {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 12px;
+  background: rgba(0, 212, 170, 0.08);
+  border: 1px solid rgba(0, 212, 170, 0.15);
+  display: grid;
+  place-items: center;
+}
+
+.login-icon {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 0 6px rgba(0, 212, 170, 0.3));
+}
+
+.login-title {
   margin: 0;
-  font-size: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.login-brand p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+.login-title-main {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #e8ecf1;
+  letter-spacing: 0.04em;
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
+.login-title-sub {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #00d4aa;
+  letter-spacing: 0.25em;
+  opacity: 0.7;
+}
+
+/* 表单 */
 .login-form {
   display: grid;
-  gap: 16px;
+  gap: 24px;
 }
 
-.login-form .field {
+.input-group {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
-.login-form label {
+.input-group label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #6b7a90;
+  text-transform: uppercase;
 }
 
-.login-form input {
-  margin: 0;
+.input-label {
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-.login-form button {
+.input-id {
+  font-size: 0.65rem;
+  color: rgba(0, 212, 170, 0.4);
+  font-weight: 500;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap input {
   width: 100%;
+  background: rgba(5, 8, 16, 0.8);
+  border: 1px solid rgba(107, 122, 144, 0.18);
+  border-radius: 3px;
+  padding: 14px 16px;
+  font-size: 0.92rem;
+  color: #e8ecf1;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.02em;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.input-wrap input::placeholder {
+  color: rgba(107, 122, 144, 0.5);
+  font-size: 0.82rem;
+}
+
+.input-wrap input:focus {
+  border-color: rgba(0, 212, 170, 0.35);
+}
+
+.input-glow {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00d4aa, transparent);
+  transition: width 0.4s ease, left 0.4s ease;
+}
+
+.input-wrap input:focus ~ .input-glow {
+  width: 100%;
+  left: 0;
+}
+
+/* 提交按钮 */
+.login-submit {
+  position: relative;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 3px;
+  background: rgba(0, 212, 170, 0.1);
+  color: #00d4aa;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   margin-top: 4px;
 }
 
+.login-submit:hover {
+  background: rgba(0, 212, 170, 0.18);
+  border-color: rgba(0, 212, 170, 0.35);
+  box-shadow: 0 0 20px rgba(0, 212, 170, 0.1);
+}
+
+.login-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.08), transparent);
+  transition: left 0.6s ease;
+}
+
+.login-submit:hover .btn-shine {
+  left: 150%;
+  transition: left 0.8s ease;
+}
+
+/* 错误提示 */
 .login-error {
-  color: var(--danger);
-  font-size: 0.92rem;
+  color: #ff6b6b;
+  font-size: 0.82rem;
   line-height: 1.6;
   text-align: center;
+  padding: 8px 12px;
+  background: rgba(255, 107, 107, 0.06);
+  border: 1px solid rgba(255, 107, 107, 0.12);
+  border-radius: 3px;
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 底部 */
+.login-footer {
+  margin-top: 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-line {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 170, 0.3), transparent);
+}
+
+.login-footer span {
+  font-size: 0.68rem;
+  color: #3a4a5c;
+  letter-spacing: 0.1em;
 }
