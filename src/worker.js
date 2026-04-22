@@ -1,9 +1,7 @@
-// Cloudflare Worker: KV short link subscription + access token protection
+// Cloudflare Worker: Fixed subscription URL with token protection
 // Requires:
 // - KV namespace binding: SUB_STORE
 // - Secret/Variable: SUB_ACCESS_TOKEN
-// Optional:
-// - Secret/Variable: SUB_LINK_SECRET (legacy long-token compatibility)
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -12,7 +10,7 @@ function json(data, status = 200) {
       'content-type': 'application/json; charset=utf-8',
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET,POST,OPTIONS',
-      'access-control-allow-headers': 'content-type',
+      'access-control-allow-headers': 'content-type, x-sub-token',
     },
   });
 }
@@ -406,34 +404,67 @@ async function createUniqueShortId(env, tries = 8) {
   throw new Error('无法生成唯一短链接，请稍后再试');
 }
 
-function normalizeLines(value = '') {
-  return String(value)
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .sort()
-    .join('\n');
+function getProvidedToken(request, url) {
+  const header = request?.headers?.get('x-sub-token') || '';
+  const query = url.searchParams.get('token') || '';
+  const pageToken = url.searchParams.get('t') || '';
+  return header || query || pageToken;
 }
 
-async function sha256Hex(input) {
-  const data = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+function validateToken(request, url, env) {
+  const expected = env.SUB_ACCESS_TOKEN;
+  if (!expected) return { ok: true };
+  const provided = getProvidedToken(request, url);
+  if (!provided || provided !== expected) {
+    return { ok: false, response: text('Forbidden: invalid token', 403) };
+  }
+  return { ok: true };
 }
 
-async function buildDedupHash(body) {
-  const normalized = {
-    nodeLinks: normalizeLines(body.nodeLinks || ''),
-    preferredIps: normalizeLines(body.preferredIps || ''),
-    namePrefix: String(body.namePrefix || '').trim(),
-    keepOriginalHost: body.keepOriginalHost !== false,
-  };
-  return sha256Hex(JSON.stringify(normalized));
+async function handleLogin(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
+  }
+
+  const expected = env.SUB_ACCESS_TOKEN;
+  if (!expected) {
+    return json({ ok: true, warning: '未配置访问令牌，任何人都可以访问' });
+  }
+
+  if (body.token !== expected) {
+    return json({ ok: false, error: '令牌错误' }, 403);
+  }
+
+  return json({ ok: true });
 }
 
-async function handleGenerate(request, env, url) {
+async function handleGetSubscription(request, env, url) {
+  const tokenCheck = validateToken(request, url, env);
+  if (!tokenCheck.ok) return tokenCheck.response;
+
+  const dataRaw = await env.SUB_STORE.get('sub:data');
+  const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+
+  if (!dataRaw) {
+    return json({ ok: true, exists: false });
+  }
+
+  const data = JSON.parse(dataRaw);
+  return json({
+    ok: true,
+    exists: true,
+    config: data,
+    fixedId: fixedId || null,
+  });
+}
+
+async function handleUpdateSubscription(request, env, url) {
+  const tokenCheck = validateToken(request, url, env);
+  if (!tokenCheck.ok) return tokenCheck.response;
+
   let body;
   try {
     body = await request.json();
@@ -454,30 +485,36 @@ async function handleGenerate(request, env, url) {
 
   const nodes = buildNodes(baseNodes, preferredEndpoints, options);
 
+  // Save raw config
+  await env.SUB_STORE.put('sub:data', JSON.stringify({
+    nodeLinks: body.nodeLinks || '',
+    preferredIps: body.preferredIps || '',
+    namePrefix: body.namePrefix || '',
+    keepOriginalHost: body.keepOriginalHost !== false,
+  }));
+
+  // Get or create fixed ID
+  let fixedId = await env.SUB_STORE.get('sub:fixed-id');
+  let isNew = false;
+  if (!fixedId) {
+    fixedId = await createUniqueShortId(env);
+    await env.SUB_STORE.put('sub:fixed-id', fixedId);
+    isNew = true;
+  }
+
+  // Save rendered payload
   const payload = {
     version: 1,
-    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     options,
     nodes,
   };
-
-  const dedupHash = await buildDedupHash(body);
-  const dedupKey = `dedup:${dedupHash}`;
-
-  let id = await env.SUB_STORE.get(dedupKey);
-
-  if (!id) {
-    id = await createUniqueShortId(env);
-
-    await env.SUB_STORE.put(`sub:${id}`, JSON.stringify(payload));
-
-    await env.SUB_STORE.put(dedupKey, id);
-  }
+  await env.SUB_STORE.put(`sub:${fixedId}`, JSON.stringify(payload));
 
   const origin = url.origin;
   const accessToken = env.SUB_ACCESS_TOKEN || '';
   const withToken = (target) =>
-    `${origin}/sub/${id}${
+    `${origin}/sub/${fixedId}${
       target
         ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
         : `?token=${encodeURIComponent(accessToken)}`
@@ -485,9 +522,8 @@ async function handleGenerate(request, env, url) {
 
   return json({
     ok: true,
-    storage: 'kv',
-    deduplicated: true,
-    shortId: id,
+    isNew,
+    fixedId,
     urls: {
       auto: withToken(''),
       raw: withToken('raw'),
@@ -507,22 +543,90 @@ async function handleGenerate(request, env, url) {
       host: node.host || '',
       sni: node.sni || '',
     })),
-    warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有第二层访问保护。'],
+    warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有访问保护。'],
   });
 }
 
-function validateAccessToken(url, env) {
-  const expected = env.SUB_ACCESS_TOKEN;
-  if (!expected) return { ok: true };
-  const provided = url.searchParams.get('token') || '';
-  if (!provided || provided !== expected) {
-    return { ok: false, response: text('Forbidden: invalid token', 403) };
+async function handleUpdateUrl(request, env, url) {
+  const tokenCheck = validateToken(request, url, env);
+  if (!tokenCheck.ok) return tokenCheck.response;
+
+  const dataRaw = await env.SUB_STORE.get('sub:data');
+  if (!dataRaw) return json({ ok: false, error: '没有现有订阅配置，请先保存配置' }, 400);
+
+  const oldId = await env.SUB_STORE.get('sub:fixed-id');
+
+  // Generate new fixed ID
+  const newId = await createUniqueShortId(env);
+
+  // Copy old payload or re-render from data
+  if (oldId) {
+    const oldRaw = await env.SUB_STORE.get(`sub:${oldId}`);
+    if (oldRaw) {
+      const payload = JSON.parse(oldRaw);
+      payload.rotatedAt = new Date().toISOString();
+      await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify(payload));
+    } else {
+      const data = JSON.parse(dataRaw);
+      const baseNodes = parseRawLinks(data.nodeLinks || '');
+      const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+      const options = {
+        namePrefix: data.namePrefix || '',
+        keepOriginalHost: data.keepOriginalHost !== false,
+      };
+      const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+      await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify({
+        version: 1,
+        updatedAt: new Date().toISOString(),
+        options,
+        nodes,
+      }));
+    }
+    // Invalidate old URL
+    await env.SUB_STORE.delete(`sub:${oldId}`);
+  } else {
+    const data = JSON.parse(dataRaw);
+    const baseNodes = parseRawLinks(data.nodeLinks || '');
+    const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+    const options = {
+      namePrefix: data.namePrefix || '',
+      keepOriginalHost: data.keepOriginalHost !== false,
+    };
+    const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+    await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify({
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      options,
+      nodes,
+    }));
   }
-  return { ok: true };
+
+  // Save new fixed ID
+  await env.SUB_STORE.put('sub:fixed-id', newId);
+
+  const origin = url.origin;
+  const accessToken = env.SUB_ACCESS_TOKEN || '';
+  const withToken = (target) =>
+    `${origin}/sub/${newId}${
+      target
+        ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
+        : `?token=${encodeURIComponent(accessToken)}`
+    }`;
+
+  return json({
+    ok: true,
+    fixedId: newId,
+    urls: {
+      auto: withToken(''),
+      raw: withToken('raw'),
+      clash: withToken('clash'),
+      surge: withToken('surge'),
+    },
+  });
 }
 
 async function handleSub(url, env) {
-  const tokenCheck = validateAccessToken(url, env);
+  const tokenCheck = validateToken(null, url, env);
   if (!tokenCheck.ok) return tokenCheck.response;
 
   const id = url.pathname.split('/').pop();
@@ -557,17 +661,39 @@ export default {
         headers: {
           'access-control-allow-origin': '*',
           'access-control-allow-methods': 'GET,POST,OPTIONS',
-          'access-control-allow-headers': 'content-type',
+          'access-control-allow-headers': 'content-type, x-sub-token',
         },
       });
     }
 
-    if (request.method === 'POST' && url.pathname === '/api/generate') {
-      return handleGenerate(request, env, url);
+    if (request.method === 'POST' && url.pathname === '/api/login') {
+      return handleLogin(request, env);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/subscription') {
+      return handleGetSubscription(request, env, url);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/update-subscription') {
+      return handleUpdateSubscription(request, env, url);
+    }
+
+    if (request.method === 'POST' && url.pathname === '/api/update-url') {
+      return handleUpdateUrl(request, env, url);
     }
 
     if (request.method === 'GET' && url.pathname.startsWith('/sub/')) {
       return handleSub(url, env);
+    }
+
+    // Page access control
+    const isPage = url.pathname === '/' || url.pathname === '/index.html';
+    if (isPage) {
+      const tokenCheck = validateToken(request, url, env);
+      if (!tokenCheck.ok) {
+        const loginReq = new Request(new URL('/login.html', url), request);
+        return env.ASSETS.fetch(loginReq);
+      }
     }
 
     return env.ASSETS.fetch(request);

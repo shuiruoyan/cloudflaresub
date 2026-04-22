@@ -1,15 +1,67 @@
+const TOKEN_KEY = 'sub_access_token';
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+
+function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+  location.href = '/';
+}
+
+// Parse token from URL on first load
+const urlParams = new URLSearchParams(location.search);
+const urlToken = urlParams.get('t');
+if (urlToken) {
+  localStorage.setItem(TOKEN_KEY, urlToken);
+  history.replaceState({}, '', location.pathname);
+}
+
+// API helpers
+async function apiGet(path) {
+  const res = await fetch(path, {
+    headers: { 'x-sub-token': getToken() },
+  });
+  if (res.status === 403) {
+    clearToken();
+    throw new Error('登录已过期，请重新登录');
+  }
+  return res;
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-sub-token': getToken(),
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 403) {
+    clearToken();
+    throw new Error('登录已过期，请重新登录');
+  }
+  return res;
+}
+
+// DOM refs
 const form = document.getElementById('generator-form');
 const submitBtn = document.getElementById('submitBtn');
+const rotateUrlBtn = document.getElementById('rotateUrlBtn');
 const fillDemoBtn = document.getElementById('fillDemoBtn');
+const logoutBtn = document.getElementById('logoutBtn');
 const resultSection = document.getElementById('resultSection');
 const warningBox = document.getElementById('warningBox');
 const previewBody = document.getElementById('previewBody');
+const emptyState = document.getElementById('emptyState');
+const urlStatus = document.getElementById('urlStatus');
+const fixedIdDisplay = document.getElementById('fixedIdDisplay');
 
 const autoUrl = document.getElementById('autoUrl');
 const rawUrl = document.getElementById('rawUrl');
 const clashUrl = document.getElementById('clashUrl');
 const surgeUrl = document.getElementById('surgeUrl');
-const emptyState = document.getElementById('emptyState');
 
 const qrModal = document.getElementById('qrModal');
 const qrCanvas = document.getElementById('qrCanvas');
@@ -33,6 +85,48 @@ fillDemoBtn.addEventListener('click', () => {
   document.getElementById('keepOriginalHost').checked = true;
 });
 
+logoutBtn.addEventListener('click', clearToken);
+
+function populateUrls(fixedId) {
+  const token = getToken();
+  const base = `${location.origin}/sub/${fixedId}`;
+  const withToken = (target) =>
+    target
+      ? `${base}?target=${target}&token=${encodeURIComponent(token)}`
+      : `${base}?token=${encodeURIComponent(token)}`;
+
+  autoUrl.value = withToken('');
+  rawUrl.value = withToken('raw');
+  document.getElementById('rocketUrl').value = withToken('raw');
+  clashUrl.value = withToken('clash');
+  surgeUrl.value = withToken('surge');
+}
+
+async function loadConfig() {
+  try {
+    const res = await apiGet('/api/subscription');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '加载失败');
+
+    if (data.exists) {
+      document.getElementById('nodeLinks').value = data.config.nodeLinks || '';
+      document.getElementById('preferredIps').value = data.config.preferredIps || '';
+      document.getElementById('namePrefix').value = data.config.namePrefix || '';
+      document.getElementById('keepOriginalHost').checked = data.config.keepOriginalHost !== false;
+
+      if (data.fixedId) {
+        fixedIdDisplay.textContent = data.fixedId;
+        urlStatus.classList.remove('hidden');
+        populateUrls(data.fixedId);
+        emptyState.classList.add('hidden');
+      }
+    }
+  } catch (err) {
+    warningBox.textContent = err.message;
+    warningBox.classList.remove('hidden');
+  }
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   warningBox.classList.add('hidden');
@@ -46,28 +140,18 @@ form.addEventListener('submit', async (event) => {
   };
 
   submitBtn.disabled = true;
-  submitBtn.textContent = '生成中...';
+  submitBtn.textContent = '保存中...';
 
   try {
-    const response = await fetch('/api/generate', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
+    const response = await apiPost('/api/update-subscription', payload);
     const data = await response.json();
     if (!response.ok || !data.ok) {
-      throw new Error(data.error || '生成失败');
+      throw new Error(data.error || '保存失败');
     }
 
-    autoUrl.value = data.urls.auto;
-    rawUrl.value = data.urls.raw;
-    document.getElementById('rocketUrl').value = data.urls.raw;
-    clashUrl.value = data.urls.clash;
-    surgeUrl.value = data.urls.surge;
-
+    populateUrls(data.fixedId);
+    fixedIdDisplay.textContent = data.fixedId;
+    urlStatus.classList.remove('hidden');
     emptyState.classList.add('hidden');
 
     document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
@@ -93,16 +177,53 @@ form.addEventListener('submit', async (event) => {
       warningBox.classList.remove('hidden');
     }
 
+    if (data.isNew) {
+      warningBox.textContent = '首次保存，已生成订阅链接。';
+      warningBox.classList.remove('hidden');
+    }
+
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
     warningBox.textContent = error.message || '请求失败';
     warningBox.classList.remove('hidden');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = '生成订阅';
+    submitBtn.textContent = '保存配置';
   }
 });
 
+rotateUrlBtn.addEventListener('click', async () => {
+  warningBox.classList.add('hidden');
+  if (!confirm('更新订阅URL后，旧链接将失效。客户端需要重新配置。确定继续？')) {
+    return;
+  }
+
+  rotateUrlBtn.disabled = true;
+  rotateUrlBtn.textContent = '更新中...';
+
+  try {
+    const response = await apiPost('/api/update-url', {});
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || '更新失败');
+    }
+
+    populateUrls(data.fixedId);
+    fixedIdDisplay.textContent = data.fixedId;
+
+    warningBox.textContent = '订阅URL已更新，请复制新链接到客户端。';
+    warningBox.classList.remove('hidden');
+    resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (error) {
+    warningBox.textContent = error.message || '请求失败';
+    warningBox.classList.remove('hidden');
+  } finally {
+    rotateUrlBtn.disabled = false;
+    rotateUrlBtn.textContent = '更新订阅URL';
+  }
+});
+
+// Copy & QR code handlers
 document.addEventListener('click', async (event) => {
   const copyButton = event.target.closest('[data-copy-target]');
   if (copyButton) {
@@ -176,3 +297,6 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
+
+// Initialize
+loadConfig();
