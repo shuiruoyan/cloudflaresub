@@ -264,6 +264,12 @@ p {
   grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr);
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
 .compact {
   gap: 16px;
   align-items: end;
@@ -278,7 +284,6 @@ p {
 }
 
 form.card,
-.tips,
 #resultSection {
   padding: 28px;
 }
@@ -364,6 +369,13 @@ input[readonly] {
   letter-spacing: 0;
   font-size: 0.86rem;
   color: var(--text);
+}
+
+.checkbox-wrap .checkbox-hint {
+  margin: 6px 0 0 26px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  opacity: 0.75;
 }
 
 .checkbox-wrap input {
@@ -1033,7 +1045,8 @@ button.warning:hover {
 /* ===== Responsive ===== */
 @media (max-width: 920px) {
   .hero,
-  .two-col {
+  .two-col,
+  .form-grid {
     grid-template-columns: 1fr;
   }
 
