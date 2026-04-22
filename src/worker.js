@@ -421,176 +421,223 @@ function validateToken(request, url, env) {
   return { ok: true };
 }
 
+function checkBindings(env) {
+  if (!env.SUB_STORE) {
+    return { ok: false, error: 'KV namespace SUB_STORE 未绑定，请在 Cloudflare Dashboard 中绑定' };
+  }
+  return { ok: true };
+}
+
 async function handleLogin(request, env) {
-  let body;
   try {
-    body = await request.json();
-  } catch {
-    return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
-  }
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
+    }
 
-  const expected = env.SUB_ACCESS_TOKEN;
-  if (!expected) {
-    return json({ ok: true, warning: '未配置访问令牌，任何人都可以访问' });
-  }
+    const expected = env.SUB_ACCESS_TOKEN;
+    if (!expected) {
+      return json({ ok: true, warning: '未配置访问令牌，任何人都可以访问' });
+    }
 
-  if (body.token !== expected) {
-    return json({ ok: false, error: '令牌错误' }, 403);
-  }
+    if (body.token !== expected) {
+      return json({ ok: false, error: '令牌错误' }, 403);
+    }
 
-  return json({ ok: true });
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: '登录处理错误: ' + (err.message || String(err)) }, 500);
+  }
 }
 
 async function handleGetSubscription(request, env, url) {
-  const tokenCheck = validateToken(request, url, env);
-  if (!tokenCheck.ok) return tokenCheck.response;
+  try {
+    const tokenCheck = validateToken(request, url, env);
+    if (!tokenCheck.ok) return tokenCheck.response;
 
-  const dataRaw = await env.SUB_STORE.get('sub:data');
-  const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
 
-  if (!dataRaw) {
-    return json({ ok: true, exists: false });
+    const dataRaw = await env.SUB_STORE.get('sub:data');
+    const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+
+    if (!dataRaw) {
+      return json({ ok: true, exists: false });
+    }
+
+    const data = JSON.parse(dataRaw);
+    const result = {
+      ok: true,
+      exists: true,
+      config: data,
+      fixedId: fixedId || null,
+    };
+
+    if (fixedId) {
+      const subRaw = await env.SUB_STORE.get(`sub:${fixedId}`);
+      if (subRaw) {
+        const sub = JSON.parse(subRaw);
+        const nodes = sub.nodes || [];
+        const baseNodes = parseRawLinks(data.nodeLinks || '');
+        const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+        result.counts = {
+          inputNodes: baseNodes.length,
+          preferredEndpoints: preferredEndpoints.length,
+          outputNodes: nodes.length,
+        };
+        result.preview = nodes.slice(0, 20).map((node) => ({
+          name: node.name,
+          type: node.type,
+          server: node.server,
+          port: node.port,
+          host: node.host || '',
+          sni: node.sni || '',
+        }));
+      }
+    }
+
+    return json(result);
+  } catch (err) {
+    return json({ ok: false, error: '获取订阅错误: ' + (err.message || String(err)) }, 500);
   }
+}
 
-  const data = JSON.parse(dataRaw);
-  const result = {
-    ok: true,
-    exists: true,
-    config: data,
-    fixedId: fixedId || null,
-  };
+async function handleUpdateSubscription(request, env, url) {
+  try {
+    const tokenCheck = validateToken(request, url, env);
+    if (!tokenCheck.ok) return tokenCheck.response;
 
-  if (fixedId) {
-    const subRaw = await env.SUB_STORE.get(`sub:${fixedId}`);
-    if (subRaw) {
-      const sub = JSON.parse(subRaw);
-      const nodes = sub.nodes || [];
-      const baseNodes = parseRawLinks(data.nodeLinks || '');
-      const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
-      result.counts = {
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
+    }
+
+    const baseNodes = parseRawLinks(body.nodeLinks || '');
+    const preferredEndpoints = parsePreferredEndpoints(body.preferredIps || '');
+
+    if (!baseNodes.length) return json({ ok: false, error: '没有识别到可用节点' }, 400);
+    if (!preferredEndpoints.length) return json({ ok: false, error: '没有识别到可用优选地址' }, 400);
+
+    const options = {
+      namePrefix: body.namePrefix || '',
+      keepOriginalHost: body.keepOriginalHost !== false,
+    };
+
+    const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+
+    // Save raw config
+    await env.SUB_STORE.put('sub:data', JSON.stringify({
+      nodeLinks: body.nodeLinks || '',
+      preferredIps: body.preferredIps || '',
+      namePrefix: body.namePrefix || '',
+      keepOriginalHost: body.keepOriginalHost !== false,
+    }));
+
+    // Get or create fixed ID
+    let fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    let isNew = false;
+    if (!fixedId) {
+      fixedId = await createUniqueShortId(env);
+      await env.SUB_STORE.put('sub:fixed-id', fixedId);
+      isNew = true;
+    }
+
+    // Save rendered payload
+    const payload = {
+      version: 1,
+      updatedAt: new Date().toISOString(),
+      options,
+      nodes,
+    };
+    await env.SUB_STORE.put(`sub:${fixedId}`, JSON.stringify(payload));
+
+    const origin = url.origin;
+    const accessToken = env.SUB_ACCESS_TOKEN || '';
+    const withToken = (target) =>
+      `${origin}/sub/${fixedId}${
+        target
+          ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
+          : `?token=${encodeURIComponent(accessToken)}`
+      }`;
+
+    return json({
+      ok: true,
+      isNew,
+      fixedId,
+      urls: {
+        auto: withToken(''),
+        raw: withToken('raw'),
+        clash: withToken('clash'),
+        surge: withToken('surge'),
+      },
+      counts: {
         inputNodes: baseNodes.length,
         preferredEndpoints: preferredEndpoints.length,
         outputNodes: nodes.length,
-      };
-      result.preview = nodes.slice(0, 20).map((node) => ({
+      },
+      preview: nodes.slice(0, 20).map((node) => ({
         name: node.name,
         type: node.type,
         server: node.server,
         port: node.port,
         host: node.host || '',
         sni: node.sni || '',
-      }));
-    }
+      })),
+      warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有访问保护。'],
+    });
+  } catch (err) {
+    return json({ ok: false, error: '保存配置错误: ' + (err.message || String(err)) }, 500);
   }
-
-  return json(result);
-}
-
-async function handleUpdateSubscription(request, env, url) {
-  const tokenCheck = validateToken(request, url, env);
-  if (!tokenCheck.ok) return tokenCheck.response;
-
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
-  }
-
-  const baseNodes = parseRawLinks(body.nodeLinks || '');
-  const preferredEndpoints = parsePreferredEndpoints(body.preferredIps || '');
-
-  if (!baseNodes.length) return json({ ok: false, error: '没有识别到可用节点' }, 400);
-  if (!preferredEndpoints.length) return json({ ok: false, error: '没有识别到可用优选地址' }, 400);
-
-  const options = {
-    namePrefix: body.namePrefix || '',
-    keepOriginalHost: body.keepOriginalHost !== false,
-  };
-
-  const nodes = buildNodes(baseNodes, preferredEndpoints, options);
-
-  // Save raw config
-  await env.SUB_STORE.put('sub:data', JSON.stringify({
-    nodeLinks: body.nodeLinks || '',
-    preferredIps: body.preferredIps || '',
-    namePrefix: body.namePrefix || '',
-    keepOriginalHost: body.keepOriginalHost !== false,
-  }));
-
-  // Get or create fixed ID
-  let fixedId = await env.SUB_STORE.get('sub:fixed-id');
-  let isNew = false;
-  if (!fixedId) {
-    fixedId = await createUniqueShortId(env);
-    await env.SUB_STORE.put('sub:fixed-id', fixedId);
-    isNew = true;
-  }
-
-  // Save rendered payload
-  const payload = {
-    version: 1,
-    updatedAt: new Date().toISOString(),
-    options,
-    nodes,
-  };
-  await env.SUB_STORE.put(`sub:${fixedId}`, JSON.stringify(payload));
-
-  const origin = url.origin;
-  const accessToken = env.SUB_ACCESS_TOKEN || '';
-  const withToken = (target) =>
-    `${origin}/sub/${fixedId}${
-      target
-        ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
-        : `?token=${encodeURIComponent(accessToken)}`
-    }`;
-
-  return json({
-    ok: true,
-    isNew,
-    fixedId,
-    urls: {
-      auto: withToken(''),
-      raw: withToken('raw'),
-      clash: withToken('clash'),
-      surge: withToken('surge'),
-    },
-    counts: {
-      inputNodes: baseNodes.length,
-      preferredEndpoints: preferredEndpoints.length,
-      outputNodes: nodes.length,
-    },
-    preview: nodes.slice(0, 20).map((node) => ({
-      name: node.name,
-      type: node.type,
-      server: node.server,
-      port: node.port,
-      host: node.host || '',
-      sni: node.sni || '',
-    })),
-    warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有访问保护。'],
-  });
 }
 
 async function handleUpdateUrl(request, env, url) {
-  const tokenCheck = validateToken(request, url, env);
-  if (!tokenCheck.ok) return tokenCheck.response;
+  try {
+    const tokenCheck = validateToken(request, url, env);
+    if (!tokenCheck.ok) return tokenCheck.response;
 
-  const dataRaw = await env.SUB_STORE.get('sub:data');
-  if (!dataRaw) return json({ ok: false, error: '没有现有订阅配置，请先保存配置' }, 400);
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
 
-  const oldId = await env.SUB_STORE.get('sub:fixed-id');
+    const dataRaw = await env.SUB_STORE.get('sub:data');
+    if (!dataRaw) return json({ ok: false, error: '没有现有订阅配置，请先保存配置' }, 400);
 
-  // Generate new fixed ID
-  const newId = await createUniqueShortId(env);
+    const oldId = await env.SUB_STORE.get('sub:fixed-id');
 
-  // Copy old payload or re-render from data
-  if (oldId) {
-    const oldRaw = await env.SUB_STORE.get(`sub:${oldId}`);
-    if (oldRaw) {
-      const payload = JSON.parse(oldRaw);
-      payload.rotatedAt = new Date().toISOString();
-      await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify(payload));
+    // Generate new fixed ID
+    const newId = await createUniqueShortId(env);
+
+    // Copy old payload or re-render from data
+    if (oldId) {
+      const oldRaw = await env.SUB_STORE.get(`sub:${oldId}`);
+      if (oldRaw) {
+        const payload = JSON.parse(oldRaw);
+        payload.rotatedAt = new Date().toISOString();
+        await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify(payload));
+      } else {
+        const data = JSON.parse(dataRaw);
+        const baseNodes = parseRawLinks(data.nodeLinks || '');
+        const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+        const options = {
+          namePrefix: data.namePrefix || '',
+          keepOriginalHost: data.keepOriginalHost !== false,
+        };
+        const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+        await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify({
+          version: 1,
+          updatedAt: new Date().toISOString(),
+          options,
+          nodes,
+        }));
+      }
+      // Invalidate old URL
+      await env.SUB_STORE.delete(`sub:${oldId}`);
     } else {
       const data = JSON.parse(dataRaw);
       const baseNodes = parseRawLinks(data.nodeLinks || '');
@@ -607,120 +654,116 @@ async function handleUpdateUrl(request, env, url) {
         nodes,
       }));
     }
-    // Invalidate old URL
-    await env.SUB_STORE.delete(`sub:${oldId}`);
-  } else {
-    const data = JSON.parse(dataRaw);
-    const baseNodes = parseRawLinks(data.nodeLinks || '');
-    const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
-    const options = {
-      namePrefix: data.namePrefix || '',
-      keepOriginalHost: data.keepOriginalHost !== false,
-    };
-    const nodes = buildNodes(baseNodes, preferredEndpoints, options);
-    await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify({
-      version: 1,
-      updatedAt: new Date().toISOString(),
-      options,
-      nodes,
-    }));
+
+    // Save new fixed ID
+    await env.SUB_STORE.put('sub:fixed-id', newId);
+
+    const origin = url.origin;
+    const accessToken = env.SUB_ACCESS_TOKEN || '';
+    const withToken = (target) =>
+      `${origin}/sub/${newId}${
+        target
+          ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
+          : `?token=${encodeURIComponent(accessToken)}`
+      }`;
+
+    return json({
+      ok: true,
+      fixedId: newId,
+      urls: {
+        auto: withToken(''),
+        raw: withToken('raw'),
+        clash: withToken('clash'),
+        surge: withToken('surge'),
+      },
+    });
+  } catch (err) {
+    return json({ ok: false, error: '更新URL错误: ' + (err.message || String(err)) }, 500);
   }
-
-  // Save new fixed ID
-  await env.SUB_STORE.put('sub:fixed-id', newId);
-
-  const origin = url.origin;
-  const accessToken = env.SUB_ACCESS_TOKEN || '';
-  const withToken = (target) =>
-    `${origin}/sub/${newId}${
-      target
-        ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
-        : `?token=${encodeURIComponent(accessToken)}`
-    }`;
-
-  return json({
-    ok: true,
-    fixedId: newId,
-    urls: {
-      auto: withToken(''),
-      raw: withToken('raw'),
-      clash: withToken('clash'),
-      surge: withToken('surge'),
-    },
-  });
 }
 
 async function handleSub(url, env) {
-  const tokenCheck = validateToken(null, url, env);
-  if (!tokenCheck.ok) return tokenCheck.response;
+  try {
+    const tokenCheck = validateToken(null, url, env);
+    if (!tokenCheck.ok) return tokenCheck.response;
 
-  const id = url.pathname.split('/').pop();
-  if (!id) return text('missing id', 400);
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return text('KV not bound: ' + bindCheck.error, 500);
 
-  const raw = await env.SUB_STORE.get(`sub:${id}`);
-  if (!raw) return text('not found', 404);
+    const id = url.pathname.split('/').pop();
+    if (!id) return text('missing id', 400);
 
-  const record = JSON.parse(raw);
-  const nodes = record.nodes || [];
-  const target = (url.searchParams.get('target') || 'raw').toLowerCase();
+    const raw = await env.SUB_STORE.get(`sub:${id}`);
+    if (!raw) return text('not found', 404);
 
-  if (target === 'clash') {
-    return text(renderClash(nodes), 200, 'text/yaml; charset=utf-8');
+    const record = JSON.parse(raw);
+    const nodes = record.nodes || [];
+    const target = (url.searchParams.get('target') || 'raw').toLowerCase();
+
+    if (target === 'clash') {
+      return text(renderClash(nodes), 200, 'text/yaml; charset=utf-8');
+    }
+    if (target === 'surge') {
+      return text(
+        renderSurge(nodes, url.origin + url.pathname, env.SUB_ACCESS_TOKEN || ''),
+        200,
+        'text/plain; charset=utf-8',
+      );
+    }
+    return text(renderRaw(nodes), 200, 'text/plain; charset=utf-8');
+  } catch (err) {
+    return text('订阅服务错误: ' + (err.message || String(err)), 500);
   }
-  if (target === 'surge') {
-    return text(
-      renderSurge(nodes, url.origin + url.pathname, env.SUB_ACCESS_TOKEN || ''),
-      200,
-      'text/plain; charset=utf-8',
-    );
-  }
-  return text(renderRaw(nodes), 200, 'text/plain; charset=utf-8');
 }
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
+    try {
+      const url = new URL(request.url);
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'access-control-allow-origin': '*',
-          'access-control-allow-methods': 'GET,POST,OPTIONS',
-          'access-control-allow-headers': 'content-type, x-sub-token',
-        },
-      });
-    }
-
-    if (request.method === 'POST' && url.pathname === '/api/login') {
-      return handleLogin(request, env);
-    }
-
-    if (request.method === 'GET' && url.pathname === '/api/subscription') {
-      return handleGetSubscription(request, env, url);
-    }
-
-    if (request.method === 'POST' && url.pathname === '/api/update-subscription') {
-      return handleUpdateSubscription(request, env, url);
-    }
-
-    if (request.method === 'POST' && url.pathname === '/api/update-url') {
-      return handleUpdateUrl(request, env, url);
-    }
-
-    if (request.method === 'GET' && url.pathname.startsWith('/sub/')) {
-      return handleSub(url, env);
-    }
-
-    // Page access control
-    const isPage = url.pathname === '/' || url.pathname === '/index.html';
-    if (isPage) {
-      const tokenCheck = validateToken(request, url, env);
-      if (!tokenCheck.ok) {
-        const loginReq = new Request(new URL('/login.html', url), request);
-        return env.ASSETS.fetch(loginReq);
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-methods': 'GET,POST,OPTIONS',
+            'access-control-allow-headers': 'content-type, x-sub-token',
+          },
+        });
       }
-    }
 
-    return env.ASSETS.fetch(request);
+      if (request.method === 'POST' && url.pathname === '/api/login') {
+        return handleLogin(request, env);
+      }
+
+      if (request.method === 'GET' && url.pathname === '/api/subscription') {
+        return handleGetSubscription(request, env, url);
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/update-subscription') {
+        return handleUpdateSubscription(request, env, url);
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/update-url') {
+        return handleUpdateUrl(request, env, url);
+      }
+
+      if (request.method === 'GET' && url.pathname.startsWith('/sub/')) {
+        return handleSub(url, env);
+      }
+
+      // Page access control
+      const isPage = url.pathname === '/' || url.pathname === '/index.html';
+      if (isPage) {
+        const tokenCheck = validateToken(request, url, env);
+        if (!tokenCheck.ok) {
+          const loginReq = new Request(new URL('/login.html', url), request);
+          return env.ASSETS.fetch(loginReq);
+        }
+      }
+
+      return env.ASSETS.fetch(request);
+    } catch (err) {
+      return json({ ok: false, error: 'Worker 全局错误: ' + (err.message || String(err)) }, 500);
+    }
   },
 };
