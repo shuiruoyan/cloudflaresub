@@ -6,9 +6,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="License MIT" />
-  <img src="https://img.shields.io/badge/platform-Windows-0078D6" alt="Windows" />
-  <img src="https://img.shields.io/badge/platform-macOS-111111" alt="macOS" />
-  <img src="https://img.shields.io/badge/platform-Linux-FCC624?logo=linux&logoColor=black" alt="Linux" />
   <img src="https://img.shields.io/badge/runtime-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
   <img src="https://img.shields.io/badge/status-active-00C853" alt="Status Active" />
 </p>
@@ -18,10 +15,12 @@
 - 支持 `vmess`、`vless`、`trojan` 节点解析
 - 支持 Base64 订阅文本自动展开
 - 支持 `host[:port][#remark]` 格式的优选地址
-- 结果写入 Workers KV，生成 `/sub/:id` 短链
-- 相同输入自动去重（7 天 TTL）
-- 支持 `SUB_ACCESS_TOKEN` 访问令牌保护
-- 支持导出：Raw（Base64）/ Clash（YAML）/ Surge（文本）
+- 固定订阅 URL：一次配置，永久使用 `/sub/:id`
+- 登录鉴权：`AUTHOR_NAME` + `ADMIN_PASSWORD` 管理后台
+- 订阅保护：`SUB_ACCESS_TOKEN` 防止订阅链接被滥用
+- 支持导出：Raw（Base64）/ Clash（YAML）/ Surge（文本）/ Shadowrocket
+- 数据持久化：Workers KV 存储，配置不丢失
+- 订阅 URL 支持手动轮换（旧链接立即失效）
 
 ## 项目结构
 
@@ -31,91 +30,119 @@ cloudflaresub/
 │  ├─ worker.js      # Worker 入口（API + 订阅输出）
 │  └─ core.js        # 解析/渲染核心函数（测试使用）
 ├─ public/           # 前端静态资源
+│  ├─ index.html     # 前端页面
+│  ├─ styles.css     # 样式
+│  ├─ app.js         # 前端逻辑
+│  └─ icons/         # 客户端图标
 ├─ tests/smoke.mjs   # Smoke test
 ├─ wrangler.toml
 └─ package.json
 ```
 
-## 快速开始（Cloudflare 网页端）
-```text
-视频部署流程：https://youtu.be/E5PI0LsQ43M
-```
-下面按 Cloudflare Dashboard 流程操作，尽量不依赖命令行。
+## 快速开始
 
 ### 1) 准备代码
 
-- 把本项目代码放到本地（你现在已经有）
-- 确认 `wrangler.toml` 中 `name`、`main`、`assets` 路径与项目一致
+- Fork 或克隆本项目到 GitHub
+- 确认 `wrangler.toml` 中 `name`、`main`、`assets` 路径正确
 
-### 2) 在 Dashboard 创建 Worker
+### 2) 创建 KV Namespace
 
-- 打开 Cloudflare Dashboard
-- 进入 `Workers & Pages`
-- 点击 `Create application` -> `Create Worker`
-- 先创建一个 Worker（用于初始化项目）
-
-### 3) 绑定到 GitHub 仓库（推荐）
-
-- 在 `Workers & Pages` 点击 `Create` -> `Import a repository`
-- 授权 GitHub，并选择仓库 `InfiCheesy/cloudflaresub`
-- 构建设置建议：
-  - Framework preset: `None`
-  - Build command: 留空
-  - Build output directory: 留空
-- 保存并开始部署
-
-说明：这个项目是 Worker 项目，入口在 `src/worker.js`，静态资源在 `public/`。
-
-### 4) 创建 KV Namespace
-
+在 Cloudflare Dashboard 中：
 - 进入 `Storage & Databases` -> `KV`
 - 点击 `Create namespace`
-- 名称建议：`SUB_STORE`
+- 名称填 `SUB_STORE`
+- 将返回的 `id` 填入 `wrangler.toml` 的 `[[kv_namespaces]]` 中
 
-### 5) 给 Worker 绑定 KV
+### 3) 配置环境变量
 
-- 回到 Worker 项目页面
-- 进入 `Settings` -> `Bindings`
-- 点击 `Add binding`，类型选择 `KV namespace`
-- Variable name 填：`SUB_STORE`
-- Namespace 选择上一步创建的 KV
-- 保存并重新部署
+在 Worker 项目的 `Settings` -> `Variables` 中配置：
 
-### 6) 配置访问令牌 Secret
+| 变量名 | 类型 | 说明 |
+|--------|------|------|
+| `AUTHOR_NAME` | 普通变量 | 登录用户名 |
+| `ADMIN_PASSWORD` | Secret | 登录密码 |
+| `SUB_ACCESS_TOKEN` | Secret | 订阅链接访问令牌（可选但强烈建议） |
 
-- 在 Worker 项目中进入 `Settings` -> `Variables`
-- 在 `Secrets` 区域添加：
-  - Key: `SUB_ACCESS_TOKEN`
-  - Value: 你自定义的一串令牌
-- 保存后重新部署
+**说明**：
+- `AUTHOR_NAME` + `ADMIN_PASSWORD` 用于保护管理后台，未配置时任何人可访问
+- `SUB_ACCESS_TOKEN` 用于保护订阅链接，未配置时订阅链接可被任意访问
 
-说明：
-- 设置后，请求 `/sub/:id` 必须带 `?token=...`
-- 不设置也可运行，但订阅链接没有二次访问保护
+### 4) 部署
 
-### 7) 验证线上服务
+**方式 A：GitHub 自动部署（推荐）**
+- 在 `Workers & Pages` 点击 `Create` -> `Import a repository`
+- 选择 GitHub 仓库
+- Framework preset: `None`
+- Build command: 留空
+- Build output directory: 留空
+- 保存并部署
 
-- 打开 Worker 域名（如 `https://<name>.<subdomain>.workers.dev`）
-- 访问首页 `/`，应看到前端表单
-- 在页面输入节点和优选地址，点击生成
-- 拿到 `/sub/:id` 后测试：
-  - `?target=raw&token=...`
-  - `?target=clash&token=...`
-  - `?target=surge&token=...`
+**方式 B：命令行部署**
+```bash
+npm install
+npx wrangler deploy
+```
 
-### 8) 后续更新代码
+### 5) 验证
 
-- 如果你使用 GitHub 自动部署：直接 push 到对应分支，Cloudflare 会自动重新部署
-- 如果你不用 GitHub 自动部署：可在 Dashboard 在线编辑器中修改后手动部署
+- 打开 Worker 域名
+- 使用配置的 `AUTHOR_NAME` 和 `ADMIN_PASSWORD` 登录
+- 输入节点链接和优选 IP，点击"保存配置"
+- 在各客户端中导入对应的订阅链接
 
 ## API 说明
 
-### `POST /api/generate`
+### `POST /api/login`
 
-输入原始节点与优选地址，返回短链订阅。
+登录获取访问令牌。
 
-请求体示例：
+请求体：
+```json
+{
+  "username": "your_author_name",
+  "password": "your_admin_password"
+}
+```
 
+返回：
+```json
+{
+  "ok": true,
+  "token": "your_sub_access_token"
+}
+```
+
+### `GET /api/subscription`
+
+获取当前订阅配置（需 `x-sub-token` Header 或 `token` 查询参数）。
+
+返回：
+```json
+{
+  "ok": true,
+  "exists": true,
+  "config": {
+    "nodeLinks": "...",
+    "preferredIps": "...",
+    "namePrefix": "CF",
+    "keepOriginalHost": true
+  },
+  "fixedId": "AbC123xYz9",
+  "counts": {
+    "inputNodes": 3,
+    "preferredEndpoints": 5,
+    "outputNodes": 15
+  },
+  "preview": [...]
+}
+```
+
+### `POST /api/update-subscription`
+
+保存或更新订阅配置。
+
+请求体：
 ```json
 {
   "nodeLinks": "vmess://...\nvless://...",
@@ -125,54 +152,67 @@ cloudflaresub/
 }
 ```
 
-字段说明：
-- `nodeLinks`: 多行节点链接
-- `preferredIps`: 多行优选地址，格式 `host[:port][#remark]`
-- `namePrefix`: 节点名附加前缀
-- `keepOriginalHost`: 是否保留原始 Host/SNI（默认 `true`）
-
-返回示例（节选）：
-
+返回：
 ```json
 {
   "ok": true,
-  "shortId": "AbC123xYz9",
+  "isNew": false,
+  "fixedId": "AbC123xYz9",
   "urls": {
     "auto": "https://<worker>/sub/AbC123xYz9?token=...",
     "raw": "https://<worker>/sub/AbC123xYz9?target=raw&token=...",
     "clash": "https://<worker>/sub/AbC123xYz9?target=clash&token=...",
     "surge": "https://<worker>/sub/AbC123xYz9?target=surge&token=..."
-  }
+  },
+  "counts": { ... },
+  "preview": [...]
+}
+```
+
+### `POST /api/update-url`
+
+轮换固定订阅 URL（旧链接立即失效）。
+
+返回：
+```json
+{
+  "ok": true,
+  "fixedId": "newIdHere",
+  "urls": { ... }
 }
 ```
 
 ### `GET /sub/:id`
 
 按 `target` 返回订阅内容：
-- `target=raw`（默认）
-- `target=clash`
-- `target=surge`
+- `target=raw`（默认）：Base64 编码的节点链接
+- `target=clash`：Clash / Mihomo YAML 配置
+- `target=surge`：Surge 代理配置
 
 示例：
-
 ```bash
-curl "https://<worker>/sub/<id>?target=clash&token=<SUB_ACCESS_TOKEN>"
+curl "https://<worker>/sub/AbC123xYz9?target=clash&token=<SUB_ACCESS_TOKEN>"
 ```
 
 ## 前端页面
 
-根路径 `/` 提供网页表单（来自 `public/`）：
-- 粘贴节点链接
-- 粘贴优选 IP / 域名
-- 生成并展示各客户端订阅链接
-- 一键复制 / 生成二维码
-
+根路径 `/` 提供网页管理后台：
+- **登录界面**：网络节点控制台风格，需 AUTHOR_NAME + ADMIN_PASSWORD
+- **配置表单**：粘贴节点链接、优选 IP、设置备注前缀
+- **选项卡切换**：自动 / V2rayN / Clash / 小火箭 / Surge 五种格式
+- **订阅链接终端**：一键复制、二维码扫描导入
+- **节点预览**：生成结果前 20 个节点预览表
+- **统计面板**：原始节点数、优选地址数、生成节点数
+- **Toast 通知**：操作成功/失败/警告横幅提示
+- **URL 轮换**：手动更新订阅 ID，旧链接立即失效
 
 ## 注意事项
 
-- `src/worker.js` 当前是 KV 短链方案，不依赖 `SUB_LINK_SECRET`
-- 每条订阅记录默认保存 7 天（TTL）
-- Surge 导出当前仅包含 `vmess` / `trojan`
+- 每条订阅记录默认保存 7 天（TTL），固定 ID 持久保存
+- Surge 导出当前仅包含 `vmess` / `trojan` 节点
+- VLESS 节点在 Surge 中可能不兼容
+- 推荐勾选"保留原 Host / SNI"，更适合 Cloudflare CDN 场景
+- 订阅链接包含敏感信息，请勿公开分享
 
 ## License
 
