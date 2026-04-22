@@ -8,7 +8,7 @@ workers_dev = true
 # 然后把返回的 id 填到下面
 [[kv_namespaces]]
 binding = "SUB_STORE"
-id = "YOUR_KV_NAMESPACE_ID_HERE"
+id = "4bbf23dfe9c34baca8a4583d90eadcbd"
 
 [assets]
 directory = "./public"
