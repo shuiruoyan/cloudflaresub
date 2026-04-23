@@ -585,28 +585,6 @@ button.warning:hover {
   display: none !important;
 }
 
-/* ===== Reveal Animation ===== */
-@keyframes revealUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.reveal-up {
-  opacity: 0;
-  animation: revealUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.reveal-delay-1 { animation-delay: 0.06s; }
-.reveal-delay-2 { animation-delay: 0.14s; }
-.reveal-delay-3 { animation-delay: 0.22s; }
-.reveal-delay-4 { animation-delay: 0.30s; }
-
 /* ===== Result Section ===== */
 #resultSection {
   margin-top: 24px;

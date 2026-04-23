@@ -18,14 +18,27 @@ function showToast(message, type = 'info', duration = 3000) {
   }, duration);
 }
 
-function revealElement(el, delayClass = '') {
-  el.classList.remove('hidden', 'reveal-up', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4');
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      el.classList.add('reveal-up');
-      if (delayClass) el.classList.add(delayClass);
-    });
-  });
+function smoothScrollToElement(element, duration = 900) {
+  const startY = window.scrollY;
+  const targetY = element.getBoundingClientRect().top + window.scrollY - 24;
+  const distance = targetY - startY;
+  const startTime = performance.now();
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function scroll(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = easeOutCubic(progress);
+    window.scrollTo(0, startY + distance * easedProgress);
+    if (progress < 1) {
+      requestAnimationFrame(scroll);
+    }
+  }
+
+  requestAnimationFrame(scroll);
 }
 
 function showConfirm(message) {
@@ -201,11 +214,11 @@ async function loadConfig() {
 
       if (data.fixedId) {
         fixedIdDisplay.textContent = data.fixedId;
+        urlStatus.classList.remove('hidden');
         populateUrls(data.fixedId);
         emptyState.classList.add('hidden');
-        revealElement(urlStatus, 'reveal-delay-1');
-        revealElement(document.getElementById('statsBar'), 'reveal-delay-2');
-        revealElement(document.getElementById('urlGenerator'), 'reveal-delay-3');
+        document.getElementById('statsBar').classList.remove('hidden');
+        document.getElementById('urlGenerator').classList.remove('hidden');
 
         if (data.counts) {
           document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
@@ -227,7 +240,7 @@ async function loadConfig() {
                 </tr>`,
             )
             .join('');
-          revealElement(document.getElementById('previewSection'), 'reveal-delay-4');
+          document.getElementById('previewSection').classList.remove('hidden');
         } else {
           previewBody.innerHTML = '';
           document.getElementById('previewSection').classList.add('hidden');
@@ -263,10 +276,10 @@ form.addEventListener('submit', async (event) => {
 
     populateUrls(data.fixedId);
     fixedIdDisplay.textContent = data.fixedId;
+    urlStatus.classList.remove('hidden');
     emptyState.classList.add('hidden');
-    revealElement(urlStatus, 'reveal-delay-1');
-    revealElement(document.getElementById('statsBar'), 'reveal-delay-2');
-    revealElement(document.getElementById('urlGenerator'), 'reveal-delay-3');
+    document.getElementById('statsBar').classList.remove('hidden');
+    document.getElementById('urlGenerator').classList.remove('hidden');
 
     document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
     document.getElementById('statEndpoints').textContent = data.counts.preferredEndpoints;
@@ -286,7 +299,7 @@ form.addEventListener('submit', async (event) => {
             </tr>`,
         )
         .join('');
-      revealElement(document.getElementById('previewSection'), 'reveal-delay-4');
+      document.getElementById('previewSection').classList.remove('hidden');
     } else {
       previewBody.innerHTML = '';
       document.getElementById('previewSection').classList.add('hidden');
@@ -302,7 +315,7 @@ form.addEventListener('submit', async (event) => {
       showToast('配置已保存', 'success');
     }
 
-    resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => smoothScrollToElement(resultSection, 900), 150);
   } catch (error) {
     showToast(error.message || '请求失败', 'error');
   } finally {
@@ -329,7 +342,7 @@ rotateUrlBtn.addEventListener('click', async () => {
     fixedIdDisplay.textContent = data.fixedId;
 
     showToast('订阅URL已更新，请复制新链接到客户端。', 'success');
-    resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => smoothScrollToElement(resultSection, 900), 150);
   } catch (error) {
     showToast(error.message || '请求失败', 'error');
   } finally {
