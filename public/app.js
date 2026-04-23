@@ -315,7 +315,7 @@ form.addEventListener('submit', async (event) => {
       showToast('配置已保存', 'success');
     }
 
-    setTimeout(() => smoothScrollToElement(resultSection, 900), 150);
+    smoothScrollToElement(resultSection, 650);
   } catch (error) {
     showToast(error.message || '请求失败', 'error');
   } finally {
@@ -342,7 +342,7 @@ rotateUrlBtn.addEventListener('click', async () => {
     fixedIdDisplay.textContent = data.fixedId;
 
     showToast('订阅URL已更新，请复制新链接到客户端。', 'success');
-    setTimeout(() => smoothScrollToElement(resultSection, 900), 150);
+    smoothScrollToElement(resultSection, 650);
   } catch (error) {
     showToast(error.message || '请求失败', 'error');
   } finally {
