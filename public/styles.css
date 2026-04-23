@@ -211,6 +211,40 @@ p {
   align-self: start;
 }
 
+.hero-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ===== Logout Button ===== */
+.logout-btn {
+  appearance: none;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 85, 85, 0.1);
+  border-color: rgba(255, 85, 85, 0.3);
+  color: var(--danger);
+  transform: translateY(-1px);
+}
+
 /* ===== Theme Toggle ===== */
 .theme-toggle {
   appearance: none;
@@ -550,6 +584,28 @@ button.warning:hover {
 .hidden {
   display: none !important;
 }
+
+/* ===== Reveal Animation ===== */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-up {
+  opacity: 0;
+  animation: revealUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.reveal-delay-1 { animation-delay: 0.06s; }
+.reveal-delay-2 { animation-delay: 0.14s; }
+.reveal-delay-3 { animation-delay: 0.22s; }
+.reveal-delay-4 { animation-delay: 0.30s; }
 
 /* ===== Result Section ===== */
 #resultSection {
@@ -1175,7 +1231,7 @@ button.warning:hover {
 
   .actions {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .actions button {
