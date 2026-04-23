@@ -353,6 +353,11 @@ textarea {
   min-height: 120px;
 }
 
+#nodeLinks,
+#preferredIps {
+  resize: none;
+}
+
 textarea,
 input[type="text"],
 input[readonly] {
