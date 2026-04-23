@@ -390,13 +390,14 @@ input[readonly] {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 8px;
-  align-items: stretch;
+  align-items: center;
 }
 
 .actions button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  height: 44px;
 }
 
 .action-checkbox {
@@ -412,6 +413,7 @@ input[readonly] {
   cursor: pointer;
   user-select: none;
   margin-right: auto;
+  height: 44px;
 }
 
 .action-checkbox input {
