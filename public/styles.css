@@ -393,6 +393,10 @@ input[readonly] {
   align-items: center;
 }
 
+.actions button {
+  white-space: nowrap;
+}
+
 .action-checkbox {
   display: flex;
   align-items: center;
