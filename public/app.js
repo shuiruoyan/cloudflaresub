@@ -56,18 +56,15 @@ function showConfirm(message) {
     const cleanup = () => {
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
-      okBtn.removeEventListener('click', onOk);
-      cancelBtn.removeEventListener('click', onCancel);
-      backdrop.removeEventListener('click', onCancel);
     };
 
     const onOk = () => { cleanup(); resolve(true); };
     const onCancel = () => { cleanup(); resolve(false); };
 
-    okBtn.addEventListener('click', onOk);
-    cancelBtn.addEventListener('click', onCancel);
+    okBtn.addEventListener('click', onOk, { once: true });
+    cancelBtn.addEventListener('click', onCancel, { once: true });
     const backdrop = modal.querySelector('[data-close-modal="true"]');
-    backdrop.addEventListener('click', onCancel);
+    backdrop.addEventListener('click', onCancel, { once: true });
   });
 }
 
@@ -86,27 +83,14 @@ function hideLogin() {
   document.getElementById('loginError').classList.add('hidden');
 }
 
-// API helpers
-async function apiGet(path) {
+// API helper
+async function apiFetch(path, opts = {}) {
   const res = await fetch(path, {
-    headers: { 'x-sub-token': getToken() },
-  });
-  if (res.status === 403) {
-    localStorage.removeItem(TOKEN_KEY);
-    showLogin('登录已过期，请重新输入令牌');
-    throw new Error('登录已过期');
-  }
-  return res;
-}
-
-async function apiPost(path, body) {
-  const res = await fetch(path, {
-    method: 'POST',
+    ...opts,
     headers: {
-      'content-type': 'application/json',
       'x-sub-token': getToken(),
+      ...opts.headers,
     },
-    body: JSON.stringify(body),
   });
   if (res.status === 403) {
     localStorage.removeItem(TOKEN_KEY);
@@ -138,6 +122,22 @@ const qrCanvas = document.getElementById('qrCanvas');
 const qrText = document.getElementById('qrText');
 const closeQrModal = document.getElementById('closeQrModal');
 
+const nodeLinks = document.getElementById('nodeLinks');
+const preferredIps = document.getElementById('preferredIps');
+const namePrefixInput = document.getElementById('namePrefix');
+const keepOriginalHost = document.getElementById('keepOriginalHost');
+const statsBar = document.getElementById('statsBar');
+const urlGenerator = document.getElementById('urlGenerator');
+const previewSection = document.getElementById('previewSection');
+const rocketUrl = document.getElementById('rocketUrl');
+const activeUrl = document.getElementById('activeUrl');
+const loginUser = document.getElementById('loginUser');
+const loginPass = document.getElementById('loginPass');
+const statInputNodes = document.getElementById('statInputNodes');
+const statEndpoints = document.getElementById('statEndpoints');
+const statOutputNodes = document.getElementById('statOutputNodes');
+const clientTabs = document.querySelectorAll('.client-tab');
+
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);
   location.reload();
@@ -159,8 +159,8 @@ loginForm.addEventListener('submit', async (e) => {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        username: document.getElementById('loginUser').value,
-        password: document.getElementById('loginPass').value,
+        username: loginUser.value,
+        password: loginPass.value,
       }),
     });
     const data = await res.json();
@@ -189,63 +189,72 @@ function populateUrls(fixedId) {
 
   autoUrl.value = withToken('');
   rawUrl.value = withToken('raw');
-  document.getElementById('rocketUrl').value = withToken('raw');
+  rocketUrl.value = withToken('raw');
   clashUrl.value = withToken('clash');
   surgeUrl.value = withToken('surge');
 
-  // 同步当前激活选项卡对应的链接到 activeUrl
   const activeTab = document.querySelector('.client-tab.active');
   if (activeTab) {
     const source = document.getElementById(activeTab.dataset.target);
-    if (source) document.getElementById('activeUrl').value = source.value;
+    if (source) activeUrl.value = source.value;
+  }
+}
+
+function renderPreviewRows(preview) {
+  return preview
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.type)}</td>
+          <td>${escapeHtml(item.server)}</td>
+          <td>${escapeHtml(String(item.port))}</td>
+          <td>${escapeHtml(item.host || '-')}</td>
+          <td>${escapeHtml(item.sni || '-')}</td>
+        </tr>`,
+    )
+    .join('');
+}
+
+function showResultState(counts, fixedId) {
+  fixedIdDisplay.textContent = fixedId;
+  urlStatus.classList.remove('hidden');
+  populateUrls(fixedId);
+  emptyState.classList.add('hidden');
+  statsBar.classList.remove('hidden');
+  urlGenerator.classList.remove('hidden');
+  if (counts) {
+    statInputNodes.textContent = counts.inputNodes;
+    statEndpoints.textContent = counts.preferredEndpoints;
+    statOutputNodes.textContent = counts.outputNodes;
+  }
+}
+
+function showPreview(preview) {
+  if (preview && preview.length > 0) {
+    previewBody.innerHTML = renderPreviewRows(preview);
+    previewSection.classList.remove('hidden');
+  } else {
+    previewBody.innerHTML = '';
+    previewSection.classList.add('hidden');
   }
 }
 
 async function loadConfig() {
   try {
-    const res = await apiGet('/api/subscription');
+    const res = await apiFetch('/api/subscription');
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '加载失败');
 
     if (data.exists) {
-      document.getElementById('nodeLinks').value = data.config.nodeLinks || '';
-      document.getElementById('preferredIps').value = data.config.preferredIps || '';
-      document.getElementById('namePrefix').value = data.config.namePrefix || '';
-      document.getElementById('keepOriginalHost').checked = data.config.keepOriginalHost !== false;
+      nodeLinks.value = data.config.nodeLinks || '';
+      preferredIps.value = data.config.preferredIps || '';
+      namePrefixInput.value = data.config.namePrefix || '';
+      keepOriginalHost.checked = data.config.keepOriginalHost !== false;
 
       if (data.fixedId) {
-        fixedIdDisplay.textContent = data.fixedId;
-        urlStatus.classList.remove('hidden');
-        populateUrls(data.fixedId);
-        emptyState.classList.add('hidden');
-        document.getElementById('statsBar').classList.remove('hidden');
-        document.getElementById('urlGenerator').classList.remove('hidden');
-
-        if (data.counts) {
-          document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
-          document.getElementById('statEndpoints').textContent = data.counts.preferredEndpoints;
-          document.getElementById('statOutputNodes').textContent = data.counts.outputNodes;
-        }
-
-        if (data.preview && data.preview.length > 0) {
-          previewBody.innerHTML = data.preview
-            .map(
-              (item) => `
-                <tr>
-                  <td>${escapeHtml(item.name)}</td>
-                  <td>${escapeHtml(item.type)}</td>
-                  <td>${escapeHtml(item.server)}</td>
-                  <td>${escapeHtml(String(item.port))}</td>
-                  <td>${escapeHtml(item.host || '-')}</td>
-                  <td>${escapeHtml(item.sni || '-')}</td>
-                </tr>`,
-            )
-            .join('');
-          document.getElementById('previewSection').classList.remove('hidden');
-        } else {
-          previewBody.innerHTML = '';
-          document.getElementById('previewSection').classList.add('hidden');
-        }
+        showResultState(data.counts, data.fixedId);
+        showPreview(data.preview);
       }
     }
   } catch (err) {
@@ -259,52 +268,28 @@ form.addEventListener('submit', async (event) => {
   previewBody.innerHTML = '';
 
   const payload = {
-    nodeLinks: document.getElementById('nodeLinks').value,
-    preferredIps: document.getElementById('preferredIps').value,
-    namePrefix: document.getElementById('namePrefix').value,
-    keepOriginalHost: document.getElementById('keepOriginalHost').checked,
+    nodeLinks: nodeLinks.value,
+    preferredIps: preferredIps.value,
+    namePrefix: namePrefixInput.value,
+    keepOriginalHost: keepOriginalHost.checked,
   };
 
   submitBtn.disabled = true;
   submitBtn.textContent = '保存中...';
 
   try {
-    const response = await apiPost('/api/update-subscription', payload);
+    const response = await apiFetch('/api/update-subscription', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
     const data = await response.json();
     if (!response.ok || !data.ok) {
       throw new Error(data.error || '保存失败');
     }
 
-    populateUrls(data.fixedId);
-    fixedIdDisplay.textContent = data.fixedId;
-    urlStatus.classList.remove('hidden');
-    emptyState.classList.add('hidden');
-    document.getElementById('statsBar').classList.remove('hidden');
-    document.getElementById('urlGenerator').classList.remove('hidden');
-
-    document.getElementById('statInputNodes').textContent = data.counts.inputNodes;
-    document.getElementById('statEndpoints').textContent = data.counts.preferredEndpoints;
-    document.getElementById('statOutputNodes').textContent = data.counts.outputNodes;
-
-    if (data.preview && data.preview.length > 0) {
-      previewBody.innerHTML = data.preview
-        .map(
-          (item) => `
-            <tr>
-              <td>${escapeHtml(item.name)}</td>
-              <td>${escapeHtml(item.type)}</td>
-              <td>${escapeHtml(item.server)}</td>
-              <td>${escapeHtml(String(item.port))}</td>
-              <td>${escapeHtml(item.host || '-')}</td>
-              <td>${escapeHtml(item.sni || '-')}</td>
-            </tr>`,
-        )
-        .join('');
-      document.getElementById('previewSection').classList.remove('hidden');
-    } else {
-      previewBody.innerHTML = '';
-      document.getElementById('previewSection').classList.add('hidden');
-    }
+    showResultState(data.counts, data.fixedId);
+    showPreview(data.preview);
 
     if (Array.isArray(data.warnings) && data.warnings.length) {
       showToast(data.warnings.join('\n'), 'warning', 5000);
@@ -333,7 +318,7 @@ rotateUrlBtn.addEventListener('click', async () => {
   rotateUrlBtn.textContent = '更新中...';
 
   try {
-    const response = await apiPost('/api/update-url', {});
+    const response = await apiFetch('/api/update-url', { method: 'POST' });
     const data = await response.json();
     if (!response.ok || !data.ok) {
       throw new Error(data.error || '更新失败');
@@ -362,25 +347,19 @@ document.addEventListener('click', async (event) => {
     }
     try {
       await navigator.clipboard.writeText(input.value);
-      showToast('链接已复制到剪贴板', 'success');
-      const copyLive = document.getElementById('copyLive');
-      if (copyLive) copyLive.textContent = '链接已复制到剪贴板';
-      const originalText = copyButton.textContent;
-      copyButton.textContent = '已复制';
-      setTimeout(() => {
-        copyButton.textContent = originalText;
-        if (copyLive) copyLive.textContent = '';
-      }, 1200);
     } catch {
       input.select();
       document.execCommand('copy');
-      showToast('链接已复制到剪贴板', 'success');
-      const copyLive = document.getElementById('copyLive');
-      if (copyLive) copyLive.textContent = '链接已复制到剪贴板';
-      setTimeout(() => {
-        if (copyLive) copyLive.textContent = '';
-      }, 1200);
     }
+    showToast('链接已复制到剪贴板', 'success');
+    const copyLive = document.getElementById('copyLive');
+    if (copyLive) copyLive.textContent = '链接已复制到剪贴板';
+    const originalText = copyButton.textContent;
+    copyButton.textContent = '已复制';
+    setTimeout(() => {
+      copyButton.textContent = originalText;
+      if (copyLive) copyLive.textContent = '';
+    }, 1200);
     return;
   }
 
@@ -445,13 +424,12 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-// 客户端选项卡切换
-document.querySelectorAll('.client-tab').forEach((tab) => {
+clientTabs.forEach((tab) => {
   tab.addEventListener('click', () => {
-    document.querySelectorAll('.client-tab').forEach((t) => t.classList.remove('active'));
+    clientTabs.forEach((t) => t.classList.remove('active'));
     tab.classList.add('active');
     const source = document.getElementById(tab.dataset.target);
-    if (source) document.getElementById('activeUrl').value = source.value;
+    if (source) activeUrl.value = source.value;
   });
 });
 

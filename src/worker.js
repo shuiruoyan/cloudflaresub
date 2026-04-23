@@ -406,6 +406,29 @@ async function createUniqueShortId(env, tries = 8) {
   throw new Error('无法生成唯一短链接，请稍后再试');
 }
 
+function buildSubUrl(origin, fixedId, target, token) {
+  const base = `${origin}/sub/${fixedId}`;
+  const t = token ? `&token=${encodeURIComponent(token)}` : '';
+  return target ? `${base}?target=${target}${t}` : `${base}?token=${encodeURIComponent(token)}`;
+}
+
+async function rerenderFromData(data, env, id) {
+  const baseNodes = parseRawLinks(data.nodeLinks || '');
+  const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+  const options = {
+    namePrefix: data.namePrefix || '',
+    keepOriginalHost: data.keepOriginalHost !== false,
+  };
+  const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+  await env.SUB_STORE.put(`sub:${id}`, JSON.stringify({
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    options,
+    nodes,
+  }));
+  return nodes;
+}
+
 function getProvidedToken(request, url) {
   const header = request?.headers?.get('x-sub-token') || '';
   const query = url.searchParams.get('token') || '';
@@ -463,8 +486,10 @@ async function handleGetSubscription(request, env, url) {
     const bindCheck = checkBindings(env);
     if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
 
-    const dataRaw = await env.SUB_STORE.get('sub:data');
-    const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    const [dataRaw, fixedId] = await Promise.all([
+      env.SUB_STORE.get('sub:data'),
+      env.SUB_STORE.get('sub:fixed-id'),
+    ]);
 
     if (!dataRaw) {
       return json({ ok: true, exists: false });
@@ -535,7 +560,6 @@ async function handleUpdateSubscription(request, env, url) {
 
     const nodes = buildNodes(baseNodes, preferredEndpoints, options);
 
-    // Save raw config
     await env.SUB_STORE.put('sub:data', JSON.stringify({
       nodeLinks: body.nodeLinks || '',
       preferredIps: body.preferredIps || '',
@@ -563,22 +587,16 @@ async function handleUpdateSubscription(request, env, url) {
 
     const origin = url.origin;
     const accessToken = env.SUB_ACCESS_TOKEN || '';
-    const withToken = (target) =>
-      `${origin}/sub/${fixedId}${
-        target
-          ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
-          : `?token=${encodeURIComponent(accessToken)}`
-      }`;
 
     return json({
       ok: true,
       isNew,
       fixedId,
       urls: {
-        auto: withToken(''),
-        raw: withToken('raw'),
-        clash: withToken('clash'),
-        surge: withToken('surge'),
+        auto: buildSubUrl(origin, fixedId, '', accessToken),
+        raw: buildSubUrl(origin, fixedId, 'raw', accessToken),
+        clash: buildSubUrl(origin, fixedId, 'clash', accessToken),
+        surge: buildSubUrl(origin, fixedId, 'surge', accessToken),
       },
       counts: {
         inputNodes: baseNodes.length,
@@ -608,15 +626,15 @@ async function handleUpdateUrl(request, env, url) {
     const bindCheck = checkBindings(env);
     if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
 
-    const dataRaw = await env.SUB_STORE.get('sub:data');
+    const [dataRaw, oldId] = await Promise.all([
+      env.SUB_STORE.get('sub:data'),
+      env.SUB_STORE.get('sub:fixed-id'),
+    ]);
     if (!dataRaw) return json({ ok: false, error: '没有现有订阅配置，请先保存配置' }, 400);
 
-    const oldId = await env.SUB_STORE.get('sub:fixed-id');
-
-    // Generate new fixed ID
     const newId = await createUniqueShortId(env);
+    const data = JSON.parse(dataRaw);
 
-    // Copy old payload or re-render from data
     if (oldId) {
       const oldRaw = await env.SUB_STORE.get(`sub:${oldId}`);
       if (oldRaw) {
@@ -624,60 +642,26 @@ async function handleUpdateUrl(request, env, url) {
         payload.rotatedAt = new Date().toISOString();
         await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify(payload));
       } else {
-        const data = JSON.parse(dataRaw);
-        const baseNodes = parseRawLinks(data.nodeLinks || '');
-        const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
-        const options = {
-          namePrefix: data.namePrefix || '',
-          keepOriginalHost: data.keepOriginalHost !== false,
-        };
-        const nodes = buildNodes(baseNodes, preferredEndpoints, options);
-        await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify({
-          version: 1,
-          updatedAt: new Date().toISOString(),
-          options,
-          nodes,
-        }));
+        await rerenderFromData(data, env, newId);
       }
-      // Invalidate old URL
       await env.SUB_STORE.delete(`sub:${oldId}`);
     } else {
-      const data = JSON.parse(dataRaw);
-      const baseNodes = parseRawLinks(data.nodeLinks || '');
-      const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
-      const options = {
-        namePrefix: data.namePrefix || '',
-        keepOriginalHost: data.keepOriginalHost !== false,
-      };
-      const nodes = buildNodes(baseNodes, preferredEndpoints, options);
-      await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify({
-        version: 1,
-        updatedAt: new Date().toISOString(),
-        options,
-        nodes,
-      }));
+      await rerenderFromData(data, env, newId);
     }
 
-    // Save new fixed ID
     await env.SUB_STORE.put('sub:fixed-id', newId);
 
     const origin = url.origin;
     const accessToken = env.SUB_ACCESS_TOKEN || '';
-    const withToken = (target) =>
-      `${origin}/sub/${newId}${
-        target
-          ? `?target=${target}&token=${encodeURIComponent(accessToken)}`
-          : `?token=${encodeURIComponent(accessToken)}`
-      }`;
 
     return json({
       ok: true,
       fixedId: newId,
       urls: {
-        auto: withToken(''),
-        raw: withToken('raw'),
-        clash: withToken('clash'),
-        surge: withToken('surge'),
+        auto: buildSubUrl(origin, newId, '', accessToken),
+        raw: buildSubUrl(origin, newId, 'raw', accessToken),
+        clash: buildSubUrl(origin, newId, 'clash', accessToken),
+        surge: buildSubUrl(origin, newId, 'surge', accessToken),
       },
     });
   } catch (err) {

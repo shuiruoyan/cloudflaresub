@@ -78,7 +78,7 @@ body::before {
 }
 
 /* Firefox */
-* {
+html {
   scrollbar-width: thin;
   scrollbar-color: rgba(88, 96, 112, 0.25) transparent;
 }
@@ -1003,8 +1003,6 @@ button.warning:hover {
   height: 14px;
   background: var(--card-border);
 }
-
-/* ===== Subscription Cards ===== */
 
 /* ===== Subscription Cards ===== */
 .sub-grid {
