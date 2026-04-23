@@ -10,6 +10,7 @@ function showToast(message, type = 'info', duration = 3000) {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
+  toast.setAttribute('role', 'alert');
   toastContainer.appendChild(toast);
 
   setTimeout(() => {
@@ -362,15 +363,23 @@ document.addEventListener('click', async (event) => {
     try {
       await navigator.clipboard.writeText(input.value);
       showToast('链接已复制到剪贴板', 'success');
+      const copyLive = document.getElementById('copyLive');
+      if (copyLive) copyLive.textContent = '链接已复制到剪贴板';
       const originalText = copyButton.textContent;
       copyButton.textContent = '已复制';
       setTimeout(() => {
         copyButton.textContent = originalText;
+        if (copyLive) copyLive.textContent = '';
       }, 1200);
     } catch {
       input.select();
       document.execCommand('copy');
       showToast('链接已复制到剪贴板', 'success');
+      const copyLive = document.getElementById('copyLive');
+      if (copyLive) copyLive.textContent = '链接已复制到剪贴板';
+      setTimeout(() => {
+        if (copyLive) copyLive.textContent = '';
+      }, 1200);
     }
     return;
   }

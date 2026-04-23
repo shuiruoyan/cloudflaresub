@@ -171,7 +171,12 @@ cf.example.com:443#US-Edge"
         <div id="warningBox" class="warning hidden"></div>
 
         <div id="emptyState" class="empty-state">
-          还没有生成订阅。请先填写节点链接和优选 IP，然后点击"保存配置"。
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <p class="empty-title">尚未生成订阅</p>
+          <p class="empty-desc">填写上方节点链接和优选 IP，点击"保存配置"后即可生成。</p>
+          <button type="button" class="empty-cta" onclick="document.getElementById('nodeLinks').focus();">开始配置</button>
         </div>
 
         <div id="urlGenerator" class="url-generator hidden">
@@ -293,6 +298,7 @@ cf.example.com:443#US-Edge"
     </div>
 
     <div id="toastContainer" class="toast-container"></div>
+    <div id="copyLive" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> 
     <script type="module" src="/app.js"></script>
   </body>
