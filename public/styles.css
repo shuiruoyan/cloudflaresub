@@ -390,6 +390,30 @@ input[readonly] {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 8px;
+  align-items: center;
+}
+
+.action-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(107, 122, 144, 0.12);
+  background: rgba(5, 8, 16, 0.5);
+  font-size: 0.84rem;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  margin-right: auto;
+}
+
+.action-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  margin: 0;
+  cursor: pointer;
 }
 
 button {
@@ -578,12 +602,20 @@ button.warning:hover {
 
 .url-gen-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.url-gen-title {
+  display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.url-gen-header h3 {
+.url-gen-title h3 {
   margin: 0;
   font-size: 0.78rem;
   text-transform: uppercase;
@@ -597,6 +629,20 @@ button.warning:hover {
   font-size: 0.8rem;
   color: var(--muted);
   opacity: 0.7;
+}
+
+.url-gen-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.url-gen-meta .url-status,
+.url-gen-meta .stats-bar {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 0.78rem;
 }
 
 /* Client Tabs */
@@ -1819,4 +1865,13 @@ button.warning:hover {
 
 [data-theme="light"] .theme-toggle:hover {
   border-color: rgba(74, 111, 165, 0.3);
+}
+
+[data-theme="light"] .action-checkbox {
+  border-color: rgba(90, 98, 112, 0.12);
+  background: rgba(230, 232, 240, 0.5);
+}
+
+[data-theme="light"] .url-gen-meta .stats-bar {
+  background: rgba(230, 232, 240, 0.6);
 }

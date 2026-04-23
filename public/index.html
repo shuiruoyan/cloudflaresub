@@ -132,20 +132,19 @@ cf.example.com:443#US-Edge"
           </div>
         </div>
 
-        <div class="grid two-col compact">
+        <div class="grid compact">
           <div>
             <label for="namePrefix">备注前缀（可选）</label>
             <input id="namePrefix" name="namePrefix" type="text" placeholder="例如 CF" />
             <p class="hint">附加到每个节点名称中，方便区分。</p>
           </div>
-          <div class="checkbox-wrap">
-            <input id="keepOriginalHost" name="keepOriginalHost" type="checkbox" checked />
-            <label for="keepOriginalHost">保留原节点 Host / SNI（推荐）</label>
-            <p class="hint checkbox-hint">推荐勾选，更适合 Cloudflare CDN 场景。</p>
-          </div>
         </div>
 
         <div class="actions">
+          <label class="action-checkbox">
+            <input id="keepOriginalHost" name="keepOriginalHost" type="checkbox" checked />
+            <span>保留原节点 Host / SNI</span>
+          </label>
           <button id="submitBtn" type="submit">保存配置</button>
           <button id="rotateUrlBtn" type="button" class="secondary warning">更新订阅URL</button>
           <button id="logoutBtn" type="button" class="secondary">退出登录</button>
@@ -161,28 +160,30 @@ cf.example.com:443#US-Edge"
           </div>
         </div>
 
-        <div id="urlStatus" class="url-status hidden">
-          <span class="status-badge">当前订阅ID: <code id="fixedIdDisplay">-</code></span>
-        </div>
-
         <div id="warningBox" class="warning hidden"></div>
 
         <div id="emptyState" class="empty-state">
           还没有生成订阅。请先填写节点链接和优选 IP，然后点击"保存配置"。
         </div>
 
-        <div id="statsBar" class="stats-bar hidden">
-          <span class="stat-item">原始节点 <strong id="statInputNodes">0</strong></span>
-          <span class="stat-divider"></span>
-          <span class="stat-item">优选地址 <strong id="statEndpoints">0</strong></span>
-          <span class="stat-divider"></span>
-          <span class="stat-item">生成节点 <strong id="statOutputNodes">0</strong></span>
-        </div>
-
         <div id="urlGenerator" class="url-generator hidden">
           <div class="url-gen-header">
-            <h3>选择客户端</h3>
-            <p class="url-gen-desc">切换下方客户端获取对应格式的订阅链接</p>
+            <div class="url-gen-title">
+              <h3>选择客户端</h3>
+              <p class="url-gen-desc">切换下方客户端获取对应格式的订阅链接</p>
+            </div>
+            <div class="url-gen-meta">
+              <div id="urlStatus" class="url-status hidden">
+                <span class="status-badge">当前订阅ID: <code id="fixedIdDisplay">-</code></span>
+              </div>
+              <div id="statsBar" class="stats-bar hidden">
+                <span class="stat-item">原始节点 <strong id="statInputNodes">0</strong></span>
+                <span class="stat-divider"></span>
+                <span class="stat-item">优选地址 <strong id="statEndpoints">0</strong></span>
+                <span class="stat-divider"></span>
+                <span class="stat-item">生成节点 <strong id="statOutputNodes">0</strong></span>
+              </div>
+            </div>
           </div>
 
           <div class="client-tabs">
