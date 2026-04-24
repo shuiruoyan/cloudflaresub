@@ -132,7 +132,7 @@ function parseRawLinks(input) {
 
 function buildNodes(baseNodes, preferredEndpoints, options = {}) {
   const output = [];
-  const prefix = (options.namePrefix || '').trim();
+  const prefix = (options.namePrefix || '优选').trim();
   let counter = 0;
   for (const node of baseNodes) {
     for (const ep of preferredEndpoints) {
@@ -153,6 +153,14 @@ function buildNodes(baseNodes, preferredEndpoints, options = {}) {
     }
   }
   return output;
+}
+
+function buildAggregateNodes(rawLinks) {
+  const baseNodes = parseRawLinks(rawLinks || '');
+  return baseNodes.map((node) => ({
+    ...node,
+    name: node.name ? `${node.name} | 聚合` : `${node.type} | 聚合`,
+  }));
 }
 
 function encodeVmess(node) {
@@ -412,21 +420,47 @@ function buildSubUrl(origin, fixedId, target, token) {
   return target ? `${base}?target=${target}${t}` : `${base}?token=${encodeURIComponent(token)}`;
 }
 
-async function rerenderFromData(data, env, id) {
-  const baseNodes = parseRawLinks(data.nodeLinks || '');
-  const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
-  const options = {
-    namePrefix: data.namePrefix || '',
-    keepOriginalHost: data.keepOriginalHost !== false,
-  };
-  const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+async function buildMergedNodes(env) {
+  const [dataRaw, aggRaw] = await Promise.all([
+    env.SUB_STORE.get('sub:data'),
+    env.SUB_STORE.get('sub:aggregate'),
+  ]);
+
+  const allNodes = [];
+  let preferredCount = 0;
+  let aggregateCount = 0;
+
+  if (dataRaw) {
+    const data = JSON.parse(dataRaw);
+    const baseNodes = parseRawLinks(data.nodeLinks || '');
+    const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+    const options = {
+      namePrefix: data.namePrefix || '优选',
+      keepOriginalHost: data.keepOriginalHost !== false,
+    };
+    const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+    preferredCount = nodes.length;
+    allNodes.push(...nodes);
+  }
+
+  if (aggRaw) {
+    const agg = JSON.parse(aggRaw);
+    const nodes = buildAggregateNodes(agg.nodeLinks || '');
+    aggregateCount = nodes.length;
+    allNodes.push(...nodes);
+  }
+
+  return { nodes: allNodes, preferredCount, aggregateCount };
+}
+
+async function saveMergedPayload(env, id) {
+  const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
   await env.SUB_STORE.put(`sub:${id}`, JSON.stringify({
-    version: 1,
+    version: 2,
     updatedAt: new Date().toISOString(),
-    options,
     nodes,
   }));
-  return nodes;
+  return { nodes, preferredCount, aggregateCount };
 }
 
 function getProvidedToken(request, url) {
