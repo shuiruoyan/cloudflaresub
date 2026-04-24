@@ -517,6 +517,14 @@ function toggleTheme() {
 initTheme();
 document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
 
+// Empty state CTA — focus first input of active form
+document.getElementById('emptyStateCta')?.addEventListener('click', () => {
+  const activeForm = document.querySelector('.mode-form.active');
+  const firstInput = activeForm?.querySelector('textarea, input');
+  if (firstInput) firstInput.focus();
+  else document.getElementById('nodeLinks')?.focus();
+});
+
 // Initialize
 if (getToken()) {
   hideLogin();

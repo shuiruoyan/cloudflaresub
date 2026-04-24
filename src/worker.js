@@ -416,7 +416,10 @@ async function createUniqueShortId(env, tries = 8) {
 
 function buildSubUrl(origin, fixedId, target, token) {
   const base = `${origin}/sub/${fixedId}`;
-  const t = token ? `&token=${encodeURIComponent(token)}` : '';
+  if (!token) {
+    return target ? `${base}?target=${target}` : base;
+  }
+  const t = `&token=${encodeURIComponent(token)}`;
   return target ? `${base}?target=${target}${t}` : `${base}?token=${encodeURIComponent(token)}`;
 }
 
@@ -442,7 +445,7 @@ async function buildMergedNodes(env) {
       const nodes = buildNodes(baseNodes, preferredEndpoints, options);
       preferredCount = nodes.length;
       allNodes.push(...nodes);
-    } catch {}
+    } catch (err) { console.error('buildMergedNodes preferred error:', err); }
   }
 
   if (aggRaw) {
@@ -451,7 +454,7 @@ async function buildMergedNodes(env) {
       const nodes = buildAggregateNodes(agg.nodeLinks || '');
       aggregateCount = nodes.length;
       allNodes.push(...nodes);
-    } catch {}
+    } catch (err) { console.error('buildMergedNodes aggregate error:', err); }
   }
 
   return { nodes: allNodes, preferredCount, aggregateCount };
