@@ -101,7 +101,6 @@ async function apiFetch(path, opts = {}) {
 }
 
 // DOM refs
-const form = document.getElementById('generator-form');
 const submitBtn = document.getElementById('submitBtn');
 const rotateUrlBtn = document.getElementById('rotateUrlBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -137,6 +136,11 @@ const statInputNodes = document.getElementById('statInputNodes');
 const statEndpoints = document.getElementById('statEndpoints');
 const statOutputNodes = document.getElementById('statOutputNodes');
 const clientTabs = document.querySelectorAll('.client-tab');
+const modeTabs = document.querySelectorAll('.mode-tab');
+const modeForms = document.querySelectorAll('.mode-form');
+const aggregateForm = document.getElementById('generator-form-aggregate');
+const aggregateNodeLinks = document.getElementById('aggregateNodeLinks');
+const submitAggregateBtn = document.getElementById('submitAggregateBtn');
 
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);
@@ -224,9 +228,9 @@ function showResultState(counts, fixedId) {
   statsBar.classList.remove('hidden');
   urlGenerator.classList.remove('hidden');
   if (counts) {
-    statInputNodes.textContent = counts.inputNodes;
-    statEndpoints.textContent = counts.preferredEndpoints;
-    statOutputNodes.textContent = counts.outputNodes;
+    statInputNodes.textContent = counts.preferredNodes ?? 0;
+    statEndpoints.textContent = counts.aggregateNodes ?? 0;
+    statOutputNodes.textContent = counts.totalNodes ?? 0;
   }
 }
 
@@ -247,10 +251,15 @@ async function loadConfig() {
     if (!data.ok) throw new Error(data.error || '加载失败');
 
     if (data.exists) {
-      nodeLinks.value = data.config.nodeLinks || '';
-      preferredIps.value = data.config.preferredIps || '';
-      namePrefixInput.value = data.config.namePrefix || '';
-      keepOriginalHost.checked = data.config.keepOriginalHost !== false;
+      if (data.preferred) {
+        nodeLinks.value = data.preferred.nodeLinks || '';
+        preferredIps.value = data.preferred.preferredIps || '';
+        namePrefixInput.value = data.preferred.namePrefix || '';
+        keepOriginalHost.checked = data.preferred.keepOriginalHost !== false;
+      }
+      if (data.aggregate) {
+        aggregateNodeLinks.value = data.aggregate.nodeLinks || '';
+      }
 
       if (data.fixedId) {
         showResultState(data.counts, data.fixedId);
@@ -262,12 +271,14 @@ async function loadConfig() {
   }
 }
 
-form.addEventListener('submit', async (event) => {
+const preferredForm = document.getElementById('generator-form-preferred');
+preferredForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   warningBox.classList.add('hidden');
   previewBody.innerHTML = '';
 
   const payload = {
+    mode: 'preferred',
     nodeLinks: nodeLinks.value,
     preferredIps: preferredIps.value,
     namePrefix: namePrefixInput.value,
@@ -307,6 +318,47 @@ form.addEventListener('submit', async (event) => {
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '保存配置';
+  }
+});
+
+aggregateForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  warningBox.classList.add('hidden');
+  previewBody.innerHTML = '';
+
+  const payload = {
+    mode: 'aggregate',
+    nodeLinks: aggregateNodeLinks.value,
+  };
+
+  submitAggregateBtn.disabled = true;
+  submitAggregateBtn.textContent = '保存中...';
+
+  try {
+    const response = await apiFetch('/api/update-subscription', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || '保存失败');
+    }
+
+    showResultState(data.counts, data.fixedId);
+    showPreview(data.preview);
+
+    if (Array.isArray(data.warnings) && data.warnings.length) {
+      showToast(data.warnings.join('\n'), 'warning', 5000);
+    }
+
+    showToast('聚合节点已保存', 'success');
+    smoothScrollToElement(resultSection, 650);
+  } catch (error) {
+    showToast(error.message || '请求失败', 'error');
+  } finally {
+    submitAggregateBtn.disabled = false;
+    submitAggregateBtn.textContent = '保存配置';
   }
 });
 
@@ -430,6 +482,18 @@ clientTabs.forEach((tab) => {
     tab.classList.add('active');
     const source = document.getElementById(tab.dataset.target);
     if (source) activeUrl.value = source.value;
+  });
+});
+
+// Mode tab switching
+modeTabs.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const mode = tab.dataset.mode;
+    modeTabs.forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    modeForms.forEach((f) => f.classList.remove('active'));
+    const targetForm = document.getElementById(`generator-form-${mode}`);
+    if (targetForm) targetForm.classList.add('active');
   });
 });
 
