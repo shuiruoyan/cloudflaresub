@@ -145,7 +145,7 @@ export function parsePreferredEndpoints(inputText) {
 
 export function expandNodes(baseNodes, endpoints, options = {}) {
   const keepOriginalHost = options.keepOriginalHost !== false;
-  const namePrefix = String(options.namePrefix || '').trim();
+  const namePrefix = String(options.namePrefix || '优选').trim();
   const warnings = [];
   const expanded = [];
 
@@ -183,6 +183,13 @@ export function expandNodes(baseNodes, endpoints, options = {}) {
   });
 
   return { nodes: expanded, warnings };
+}
+
+export function prefixAggregateNodes(nodes) {
+  return nodes.map((node) => ({
+    ...deepClone(node),
+    name: node.name ? `${node.name} | 聚合` : `${node.type} | 聚合`,
+  }));
 }
 
 export function summarizeNodes(nodes, limit = 20) {
