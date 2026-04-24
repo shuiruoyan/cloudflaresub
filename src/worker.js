@@ -668,29 +668,20 @@ async function handleUpdateUrl(request, env, url) {
     const bindCheck = checkBindings(env);
     if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
 
-    const [dataRaw, oldId] = await Promise.all([
+    const [dataRaw, aggRaw, oldId] = await Promise.all([
       env.SUB_STORE.get('sub:data'),
+      env.SUB_STORE.get('sub:aggregate'),
       env.SUB_STORE.get('sub:fixed-id'),
     ]);
-    if (!dataRaw) return json({ ok: false, error: '没有现有订阅配置，请先保存配置' }, 400);
+    if (!dataRaw && !aggRaw) return json({ ok: false, error: '没有现有订阅配置，请先保存配置' }, 400);
 
     const newId = await createUniqueShortId(env);
-    const data = JSON.parse(dataRaw);
 
     if (oldId) {
-      const oldRaw = await env.SUB_STORE.get(`sub:${oldId}`);
-      if (oldRaw) {
-        const payload = JSON.parse(oldRaw);
-        payload.rotatedAt = new Date().toISOString();
-        await env.SUB_STORE.put(`sub:${newId}`, JSON.stringify(payload));
-      } else {
-        await rerenderFromData(data, env, newId);
-      }
       await env.SUB_STORE.delete(`sub:${oldId}`);
-    } else {
-      await rerenderFromData(data, env, newId);
     }
 
+    await saveMergedPayload(env, newId);
     await env.SUB_STORE.put('sub:fixed-id', newId);
 
     const origin = url.origin;
