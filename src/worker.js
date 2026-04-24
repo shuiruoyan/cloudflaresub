@@ -551,27 +551,20 @@ async function handleGetSubscription(request, env, url) {
       fixedId: fixedId || null,
     };
 
-    if (fixedId) {
-      const subRaw = await env.SUB_STORE.get(`sub:${fixedId}`);
-      if (subRaw) {
-        const sub = JSON.parse(subRaw);
-        const nodes = sub.nodes || [];
-        const { preferredCount, aggregateCount } = await buildMergedNodes(env);
-        result.counts = {
-          preferredNodes: preferredCount,
-          aggregateNodes: aggregateCount,
-          totalNodes: preferredCount + aggregateCount,
-        };
-        result.preview = nodes.map((node) => ({
-          name: node.name,
-          type: node.type,
-          server: node.server,
-          port: node.port,
-          host: node.host || '',
-          sni: node.sni || '',
-        }));
-      }
-    }
+    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
+    result.counts = {
+      preferredNodes: preferredCount,
+      aggregateNodes: aggregateCount,
+      totalNodes: preferredCount + aggregateCount,
+    };
+    result.preview = nodes.map((node) => ({
+      name: node.name,
+      type: node.type,
+      server: node.server,
+      port: node.port,
+      host: node.host || '',
+      sni: node.sni || '',
+    }));
 
     return json(result);
   } catch (err) {
