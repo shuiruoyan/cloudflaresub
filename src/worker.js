@@ -95,7 +95,9 @@ function parseUrlLike(link, type) {
     security: security || undefined,
     host: u.searchParams.get('host') || u.searchParams.get('sni') || '',
     path: u.searchParams.get('path') || '/',
-    sni: u.searchParams.get('sni') || u.searchParams.get('host') || '',
+    sni: u.searchParams.get('sni') || u.searchParams.get('peer') || u.searchParams.get('host') || '',
+    serviceName: u.searchParams.get('serviceName') || '',
+    authority: u.searchParams.get('authority') || '',
     fp: u.searchParams.get('fp') || '',
     alpn: u.searchParams.get('alpn') || '',
     flow: u.searchParams.get('flow') || '',
@@ -213,6 +215,8 @@ function encodeVless(node) {
   if (node.spx) url.searchParams.set('spx', node.spx);
   if (node.mode) url.searchParams.set('mode', node.mode);
   if (node.extra) url.searchParams.set('extra', node.extra);
+  if (node.serviceName) url.searchParams.set('serviceName', node.serviceName);
+  if (node.authority) url.searchParams.set('authority', node.authority);
   if (node.allowInsecure) url.searchParams.set('allowInsecure', '1');
   url.hash = node.name;
   return url.toString();
@@ -302,6 +306,10 @@ function renderClash(nodes) {
           lines.push(`    client-fingerprint: ${escapeYaml(node.fp)}`);
         }
 
+        if (node.flow) {
+          lines.push(`    flow: ${escapeYaml(node.flow)}`);
+        }
+
         if (node.tls) {
           lines.push(`    skip-cert-verify: ${node.allowInsecure ? 'true' : 'false'}`);
         }
@@ -326,6 +334,18 @@ function renderClash(nodes) {
         if (node.network === 'grpc') {
           lines.push(`    grpc-opts:`);
           lines.push(`      grpc-service-name: "${escapeYaml(node.serviceName || '')}"`);
+          if (node.authority) {
+            lines.push(`      authority: "${escapeYaml(node.authority)}"`);
+          }
+        }
+
+        if (node.network === 'xhttp' || node.network === 'splithttp') {
+          lines.push(`    xhttp-opts:`);
+          if (node.mode) lines.push(`      mode: "${escapeYaml(node.mode)}"`);
+          if (node.extra) lines.push(`      extra: "${escapeYaml(node.extra)}"`);
+          lines.push(`      path: "${escapeYaml(node.path || '/')}"`);
+          lines.push(`      headers:`);
+          lines.push(`        Host: "${escapeYaml(node.host || node.sni || '')}"`);
         }
 
         return lines.join('\n');

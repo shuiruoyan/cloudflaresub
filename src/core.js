@@ -491,6 +491,11 @@ function parseVlessUri(uri) {
     serviceName: String(params.serviceName || '').trim(),
     authority: String(params.authority || '').trim(),
     encryption: String(params.encryption || 'none').trim() || 'none',
+    pbk: String(params.pbk || '').trim(),
+    sid: String(params.sid || '').trim(),
+    spx: String(params.spx || '').trim(),
+    mode: String(params.mode || '').trim(),
+    extra: String(params.extra || '').trim(),
     params,
   };
 }
