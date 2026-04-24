@@ -593,6 +593,13 @@ function renderClashProxy(node) {
     if (node.flow) {
       lines.push(`    flow: ${yamlQuote(node.flow)}`);
     }
+    // Reality support
+    if (node.security === 'reality' && node.pbk) {
+      lines.push(`    reality-opts:`);
+      lines.push(`      public-key: ${yamlQuote(node.pbk)}`);
+      if (node.sid) lines.push(`      short-id: ${yamlQuote(node.sid)}`);
+      if (node.spx) lines.push(`      spider-x: ${yamlQuote(node.spx)}`);
+    }
   }
   if (node.type === 'trojan') {
     lines.push(`    password: ${yamlQuote(node.password)}`);

@@ -82,6 +82,7 @@ function parseVmess(link) {
 
 function parseUrlLike(link, type) {
   const u = new URL(link);
+  const security = (u.searchParams.get('security') || '').toLowerCase();
   return {
     type,
     name: decodeURIComponent(u.hash.replace(/^#/, '')) || type,
@@ -90,13 +91,20 @@ function parseUrlLike(link, type) {
     password: type === 'trojan' ? decodeURIComponent(u.username) : undefined,
     uuid: type === 'vless' ? decodeURIComponent(u.username) : undefined,
     network: u.searchParams.get('type') || 'tcp',
-    tls: (u.searchParams.get('security') || '').toLowerCase() === 'tls',
+    tls: security === 'tls' || security === 'reality',
+    security: security || undefined,
     host: u.searchParams.get('host') || u.searchParams.get('sni') || '',
     path: u.searchParams.get('path') || '/',
     sni: u.searchParams.get('sni') || u.searchParams.get('host') || '',
     fp: u.searchParams.get('fp') || '',
     alpn: u.searchParams.get('alpn') || '',
     flow: u.searchParams.get('flow') || '',
+    encryption: type === 'vless' ? (u.searchParams.get('encryption') || 'none') : undefined,
+    pbk: u.searchParams.get('pbk') || '',
+    sid: u.searchParams.get('sid') || '',
+    spx: u.searchParams.get('spx') || '',
+    mode: u.searchParams.get('mode') || '',
+    extra: u.searchParams.get('extra') || '',
   };
 }
 
@@ -187,13 +195,23 @@ function encodeVmess(node) {
 function encodeVless(node) {
   const url = new URL(`vless://${encodeURIComponent(node.uuid)}@${node.server}:${node.port}`);
   url.searchParams.set('type', node.network || 'ws');
-  if (node.tls) url.searchParams.set('security', 'tls');
+  url.searchParams.set('encryption', node.encryption || 'none');
+  if (node.security) {
+    url.searchParams.set('security', node.security);
+  } else if (node.tls) {
+    url.searchParams.set('security', 'tls');
+  }
   if (node.host) url.searchParams.set('host', node.host);
   if (node.sni) url.searchParams.set('sni', node.sni);
   if (node.path) url.searchParams.set('path', node.path);
   if (node.alpn) url.searchParams.set('alpn', node.alpn);
   if (node.fp) url.searchParams.set('fp', node.fp);
   if (node.flow) url.searchParams.set('flow', node.flow);
+  if (node.pbk) url.searchParams.set('pbk', node.pbk);
+  if (node.sid) url.searchParams.set('sid', node.sid);
+  if (node.spx) url.searchParams.set('spx', node.spx);
+  if (node.mode) url.searchParams.set('mode', node.mode);
+  if (node.extra) url.searchParams.set('extra', node.extra);
   url.hash = node.name;
   return url.toString();
 }
@@ -272,6 +290,18 @@ function renderClash(nodes) {
           lines.push(`    servername: "${escapeYaml(node.sni)}"`);
         }
 
+        if (node.fp) {
+          lines.push(`    client-fingerprint: ${escapeYaml(node.fp)}`);
+        }
+
+        // Reality support
+        if (node.security === 'reality' && node.pbk) {
+          lines.push(`    reality-opts:`);
+          lines.push(`      public-key: "${escapeYaml(node.pbk)}"`);
+          if (node.sid) lines.push(`      short-id: "${escapeYaml(node.sid)}"`);
+          if (node.spx) lines.push(`      spider-x: "${escapeYaml(node.spx)}"`);
+        }
+
         if ((node.network || 'ws') === 'ws') {
           lines.push(
             `    ws-opts:`,
@@ -279,6 +309,11 @@ function renderClash(nodes) {
             `      headers:`,
             `        Host: "${escapeYaml(node.host || node.sni || '')}"`
           );
+        }
+
+        if (node.network === 'grpc') {
+          lines.push(`    grpc-opts:`);
+          lines.push(`      grpc-service-name: "${escapeYaml(node.serviceName || '')}"`);
         }
 
         return lines.join('\n');
