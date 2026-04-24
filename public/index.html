@@ -109,7 +109,18 @@
         </div>
       </section>
 
-      <form id="generator-form" class="card stack-lg">
+      <div class="mode-tabs">
+        <button type="button" class="mode-tab active" data-mode="preferred">
+          <span class="mode-tab-name">优选 IP 模式</span>
+          <span class="mode-tab-desc">节点 + 优选 IP 组合生成</span>
+        </button>
+        <button type="button" class="mode-tab" data-mode="aggregate">
+          <span class="mode-tab-name">聚合模式</span>
+          <span class="mode-tab-desc">节点链接直接聚合</span>
+        </button>
+      </div>
+
+      <form id="generator-form-preferred" class="card stack-lg mode-form active">
         <div class="form-grid">
           <div>
             <label for="nodeLinks">节点链接</label>
@@ -155,7 +166,24 @@ cf.example.com:443#US-Edge"
             <span>保留原节点 Host / SNI</span>
           </label>
           <button id="submitBtn" type="submit">保存配置</button>
-          <button id="rotateUrlBtn" type="button" class="secondary warning">更新订阅URL</button>
+        </div>
+      </form>
+
+      <form id="generator-form-aggregate" class="card stack-lg mode-form">
+        <div>
+          <label for="aggregateNodeLinks">节点链接</label>
+          <textarea
+            id="aggregateNodeLinks"
+            name="nodeLinks"
+            rows="14"
+            placeholder="支持 vmess://、vless://、trojan://，一行一个。也支持直接粘贴原始 base64 订阅内容。"
+            required
+          ></textarea>
+          <p class="hint">支持 vmess / vless / trojan，一行一个。兼容自建 WS + TLS 写法，也支持粘贴 base64 订阅。节点将原样聚合，名称自动追加「| 聚合」后缀。</p>
+        </div>
+
+        <div class="actions">
+          <button id="submitAggregateBtn" type="submit">保存配置</button>
         </div>
       </form>
 
@@ -235,6 +263,7 @@ cf.example.com:443#US-Edge"
             <div class="url-actions">
               <button type="button" data-copy-target="activeUrl">复制链接</button>
               <button type="button" class="secondary" data-qrcode-target="activeUrl">二维码</button>
+              <button id="rotateUrlBtn" type="button" class="secondary warning">更新订阅URL</button>
             </div>
             <p class="hint url-hint">Surge 格式当前以 VMess / Trojan 节点导出为主；VLESS 节点可能不兼容。</p>
           </div>
