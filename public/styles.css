@@ -1925,3 +1925,52 @@ button.warning:hover {
 [data-theme="light"] .url-gen-meta .stats-bar {
   background: rgba(230, 232, 240, 0.6);
 }
+
+/* Mode tabs */
+.mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.mode-tab:hover {
+  border-color: var(--primary);
+}
+
+.mode-tab.active {
+  border-color: var(--primary);
+  background: var(--primary-bg, rgba(99, 102, 241, 0.08));
+}
+
+.mode-tab-name {
+  display: block;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.mode-tab-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.mode-form {
+  display: none;
+}
+
+.mode-form.active {
+  display: block;
+}
