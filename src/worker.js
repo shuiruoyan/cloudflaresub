@@ -431,23 +431,27 @@ async function buildMergedNodes(env) {
   let aggregateCount = 0;
 
   if (dataRaw) {
-    const data = JSON.parse(dataRaw);
-    const baseNodes = parseRawLinks(data.nodeLinks || '');
-    const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
-    const options = {
-      namePrefix: data.namePrefix || '优选',
-      keepOriginalHost: data.keepOriginalHost !== false,
-    };
-    const nodes = buildNodes(baseNodes, preferredEndpoints, options);
-    preferredCount = nodes.length;
-    allNodes.push(...nodes);
+    try {
+      const data = JSON.parse(dataRaw);
+      const baseNodes = parseRawLinks(data.nodeLinks || '');
+      const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+      const options = {
+        namePrefix: data.namePrefix || '优选',
+        keepOriginalHost: data.keepOriginalHost !== false,
+      };
+      const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+      preferredCount = nodes.length;
+      allNodes.push(...nodes);
+    } catch {}
   }
 
   if (aggRaw) {
-    const agg = JSON.parse(aggRaw);
-    const nodes = buildAggregateNodes(agg.nodeLinks || '');
-    aggregateCount = nodes.length;
-    allNodes.push(...nodes);
+    try {
+      const agg = JSON.parse(aggRaw);
+      const nodes = buildAggregateNodes(agg.nodeLinks || '');
+      aggregateCount = nodes.length;
+      allNodes.push(...nodes);
+    } catch {}
   }
 
   return { nodes: allNodes, preferredCount, aggregateCount };
