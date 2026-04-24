@@ -100,6 +100,7 @@ function parseUrlLike(link, type) {
     alpn: u.searchParams.get('alpn') || '',
     flow: u.searchParams.get('flow') || '',
     encryption: type === 'vless' ? (u.searchParams.get('encryption') || 'none') : undefined,
+    allowInsecure: (u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '') === '1' || (u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '').toLowerCase() === 'true',
     pbk: u.searchParams.get('pbk') || '',
     sid: u.searchParams.get('sid') || '',
     spx: u.searchParams.get('spx') || '',
@@ -212,6 +213,7 @@ function encodeVless(node) {
   if (node.spx) url.searchParams.set('spx', node.spx);
   if (node.mode) url.searchParams.set('mode', node.mode);
   if (node.extra) url.searchParams.set('extra', node.extra);
+  if (node.allowInsecure) url.searchParams.set('allowInsecure', '1');
   url.hash = node.name;
   return url.toString();
 }
@@ -262,6 +264,12 @@ function renderClash(nodes) {
           lines.push(`    servername: "${escapeYaml(node.sni)}"`);
         }
 
+        if (node.fp) {
+          lines.push(`    client-fingerprint: ${escapeYaml(node.fp)}`);
+        }
+
+        lines.push(`    skip-cert-verify: ${node.allowInsecure ? 'true' : 'false'}`);
+
         if ((node.network || 'ws') === 'ws') {
           lines.push(
             `    ws-opts:`,
@@ -292,6 +300,10 @@ function renderClash(nodes) {
 
         if (node.fp) {
           lines.push(`    client-fingerprint: ${escapeYaml(node.fp)}`);
+        }
+
+        if (node.tls) {
+          lines.push(`    skip-cert-verify: ${node.allowInsecure ? 'true' : 'false'}`);
         }
 
         // Reality support
