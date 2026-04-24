@@ -142,6 +142,18 @@ const aggregateForm = document.getElementById('generator-form-aggregate');
 const aggregateNodeLinks = document.getElementById('aggregateNodeLinks');
 const submitAggregateBtn = document.getElementById('submitAggregateBtn');
 
+// Pagination & exclude refs
+const pagination = document.getElementById('pagination');
+const prevPageBtn = document.getElementById('prevPage');
+const nextPageBtn = document.getElementById('nextPage');
+const pageInfo = document.getElementById('pageInfo');
+const resetExcludedBtn = document.getElementById('resetExcludedBtn');
+
+let previewAllData = [];
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let excludedNames = new Set();
+
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);
   location.reload();
@@ -215,9 +227,36 @@ function renderPreviewRows(preview) {
           <td>${escapeHtml(String(item.port))}</td>
           <td>${escapeHtml(item.host || '-')}</td>
           <td>${escapeHtml(item.sni || '-')}</td>
+          <td>
+            <button type="button" class="btn-delete" data-exclude-name="${escapeHtml(item.name)}" aria-label="删除 ${escapeHtml(item.name)}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </td>
         </tr>`,
     )
     .join('');
+}
+
+function renderPagination() {
+  const total = previewAllData.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (totalPages <= 1) {
+    pagination.classList.add('hidden');
+    return;
+  }
+  pagination.classList.remove('hidden');
+  pageInfo.textContent = `${currentPage} / ${totalPages}`;
+  prevPageBtn.disabled = currentPage <= 1;
+  nextPageBtn.disabled = currentPage >= totalPages;
+}
+
+function applyPreviewPage() {
+  const totalPages = Math.max(1, Math.ceil(previewAllData.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages || 1;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageData = previewAllData.slice(start, start + PAGE_SIZE);
+  previewBody.innerHTML = renderPreviewRows(pageData);
+  renderPagination();
 }
 
 function showResultState(counts, fixedId) {
@@ -234,13 +273,24 @@ function showResultState(counts, fixedId) {
   }
 }
 
-function showPreview(preview) {
-  if (preview && preview.length > 0) {
-    previewBody.innerHTML = renderPreviewRows(preview);
+function showPreview(preview, excluded) {
+  previewAllData = preview || [];
+  if (excluded) {
+    excludedNames = new Set(excluded);
+  }
+  if (excludedNames.size > 0) {
+    resetExcludedBtn.classList.remove('hidden');
+  } else {
+    resetExcludedBtn.classList.add('hidden');
+  }
+  currentPage = 1;
+  if (previewAllData.length > 0) {
+    applyPreviewPage();
     previewSection.classList.remove('hidden');
   } else {
     previewBody.innerHTML = '';
     previewSection.classList.add('hidden');
+    pagination.classList.add('hidden');
   }
 }
 
@@ -263,7 +313,7 @@ async function loadConfig() {
 
       if (data.fixedId) {
         showResultState(data.counts, data.fixedId);
-        showPreview(data.preview);
+        showPreview(data.preview, data.excluded);
       }
     }
   } catch (err) {
@@ -300,7 +350,7 @@ preferredForm.addEventListener('submit', async (event) => {
     }
 
     showResultState(data.counts, data.fixedId);
-    showPreview(data.preview);
+    showPreview(data.preview, data.excluded);
 
     if (Array.isArray(data.warnings) && data.warnings.length) {
       showToast(data.warnings.join('\n'), 'warning', 5000);
@@ -346,7 +396,7 @@ aggregateForm.addEventListener('submit', async (event) => {
     }
 
     showResultState(data.counts, data.fixedId);
-    showPreview(data.preview);
+    showPreview(data.preview, data.excluded);
 
     if (Array.isArray(data.warnings) && data.warnings.length) {
       showToast(data.warnings.join('\n'), 'warning', 5000);
@@ -445,6 +495,14 @@ document.addEventListener('click', async (event) => {
   if (event.target.closest('[data-close-modal="true"]')) {
     closeQrDialog();
   }
+
+  const deleteBtn = event.target.closest('[data-exclude-name]');
+  if (deleteBtn) {
+    const name = deleteBtn.dataset.excludeName;
+    if (!name) return;
+    excludeNode(name);
+    return;
+  }
 });
 
 closeQrModal.addEventListener('click', closeQrDialog);
@@ -475,6 +533,60 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
 }
+
+// Pagination handlers
+prevPageBtn.addEventListener('click', () => {
+  if (currentPage > 1) {
+    currentPage--;
+    applyPreviewPage();
+  }
+});
+
+nextPageBtn.addEventListener('click', () => {
+  const totalPages = Math.max(1, Math.ceil(previewAllData.length / PAGE_SIZE));
+  if (currentPage < totalPages) {
+    currentPage++;
+    applyPreviewPage();
+  }
+});
+
+// Exclude / reset handlers
+async function excludeNode(name) {
+  try {
+    const response = await apiFetch('/api/exclude-node', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || '删除失败');
+    }
+    showResultState(data.counts, fixedIdDisplay.textContent);
+    showPreview(data.preview, data.excluded);
+    showToast(`已删除「${name}」`, 'success');
+  } catch (error) {
+    showToast(error.message || '删除失败', 'error');
+  }
+}
+
+resetExcludedBtn.addEventListener('click', async () => {
+  const confirmed = await showConfirm('确定重置排除列表？所有被排除的节点将恢复显示。');
+  if (!confirmed) return;
+
+  try {
+    const response = await apiFetch('/api/reset-excluded', { method: 'POST' });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || '重置失败');
+    }
+    showResultState(data.counts, fixedIdDisplay.textContent);
+    showPreview(data.preview, data.excluded);
+    showToast('已重置排除列表', 'success');
+  } catch (error) {
+    showToast(error.message || '重置失败', 'error');
+  }
+});
 
 clientTabs.forEach((tab) => {
   tab.addEventListener('click', () => {

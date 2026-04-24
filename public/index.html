@@ -276,7 +276,10 @@ cf.example.com:443#US-Edge"
         </div>
 
         <div id="previewSection" class="preview-wrap hidden">
-          <h3>预览前 20 个生成节点</h3>
+          <div class="preview-head">
+            <h3>节点预览</h3>
+            <button id="resetExcludedBtn" type="button" class="secondary small hidden">重置排除</button>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -287,10 +290,16 @@ cf.example.com:443#US-Edge"
                   <th>端口</th>
                   <th>Host</th>
                   <th>SNI</th>
+                  <th class="col-action">操作</th>
                 </tr>
               </thead>
               <tbody id="previewBody"></tbody>
             </table>
+          </div>
+          <div id="pagination" class="pagination hidden">
+            <button type="button" id="prevPage" class="secondary small">上一页</button>
+            <span id="pageInfo" class="page-info"></span>
+            <button type="button" id="nextPage" class="secondary small">下一页</button>
           </div>
         </div>
       </section>

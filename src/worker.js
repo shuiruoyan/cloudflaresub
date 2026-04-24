@@ -491,10 +491,17 @@ function buildSubUrl(origin, fixedId, target, token) {
 }
 
 async function buildMergedNodes(env) {
-  const [dataRaw, aggRaw] = await Promise.all([
+  const [dataRaw, aggRaw, excludedRaw] = await Promise.all([
     env.SUB_STORE.get('sub:data'),
     env.SUB_STORE.get('sub:aggregate'),
+    env.SUB_STORE.get('sub:excluded'),
   ]);
+
+  let excluded = [];
+  if (excludedRaw) {
+    try { excluded = JSON.parse(excludedRaw); } catch {}
+  }
+  const excludedSet = new Set(excluded);
 
   const allNodes = [];
   let preferredCount = 0;
@@ -509,7 +516,7 @@ async function buildMergedNodes(env) {
         namePrefix: data.namePrefix || '优选',
         keepOriginalHost: data.keepOriginalHost !== false,
       };
-      const nodes = buildNodes(baseNodes, preferredEndpoints, options);
+      const nodes = buildNodes(baseNodes, preferredEndpoints, options).filter((n) => !excludedSet.has(n.name));
       preferredCount = nodes.length;
       allNodes.push(...nodes);
     } catch (err) { console.error('buildMergedNodes preferred error:', err); }
@@ -518,23 +525,23 @@ async function buildMergedNodes(env) {
   if (aggRaw) {
     try {
       const agg = JSON.parse(aggRaw);
-      const nodes = buildAggregateNodes(agg.nodeLinks || '');
+      const nodes = buildAggregateNodes(agg.nodeLinks || '').filter((n) => !excludedSet.has(n.name));
       aggregateCount = nodes.length;
       allNodes.push(...nodes);
     } catch (err) { console.error('buildMergedNodes aggregate error:', err); }
   }
 
-  return { nodes: allNodes, preferredCount, aggregateCount };
+  return { nodes: allNodes, preferredCount, aggregateCount, excluded };
 }
 
 async function saveMergedPayload(env, id) {
-  const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
+  const { nodes, preferredCount, aggregateCount, excluded } = await buildMergedNodes(env);
   await env.SUB_STORE.put(`sub:${id}`, JSON.stringify({
     version: 2,
     updatedAt: new Date().toISOString(),
     nodes,
   }));
-  return { nodes, preferredCount, aggregateCount };
+  return { nodes, preferredCount, aggregateCount, excluded };
 }
 
 function getProvidedToken(request, url) {
@@ -621,7 +628,7 @@ async function handleGetSubscription(request, env, url) {
       fixedId: fixedId || null,
     };
 
-    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
+    const { nodes, preferredCount, aggregateCount, excluded } = await buildMergedNodes(env);
     result.counts = {
       preferredNodes: preferredCount,
       aggregateNodes: aggregateCount,
@@ -635,6 +642,7 @@ async function handleGetSubscription(request, env, url) {
       host: node.host || '',
       sni: node.sni || '',
     }));
+    result.excluded = excluded;
 
     return json(result);
   } catch (err) {
@@ -695,7 +703,7 @@ async function handleUpdateSubscription(request, env, url) {
     }
 
     // Rebuild merged payload
-    const { nodes, preferredCount, aggregateCount } = await saveMergedPayload(env, fixedId);
+    const { nodes, preferredCount, aggregateCount, excluded } = await saveMergedPayload(env, fixedId);
 
     const origin = url.origin;
     const accessToken = env.SUB_ACCESS_TOKEN || '';
@@ -723,6 +731,7 @@ async function handleUpdateSubscription(request, env, url) {
         host: node.host || '',
         sni: node.sni || '',
       })),
+      excluded,
       warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有访问保护。'],
     });
   } catch (err) {
@@ -769,6 +778,102 @@ async function handleUpdateUrl(request, env, url) {
     });
   } catch (err) {
     return json({ ok: false, error: '更新URL错误: ' + (err.message || String(err)) }, 500);
+  }
+}
+
+async function handleExcludeNode(request, env) {
+  try {
+    const tokenCheck = validateToken(request, new URL(request.url), env);
+    if (!tokenCheck.ok) return tokenCheck.response;
+
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
+    }
+
+    const name = body.name;
+    if (!name || typeof name !== 'string') {
+      return json({ ok: false, error: '缺少节点名称' }, 400);
+    }
+
+    const excludedRaw = await env.SUB_STORE.get('sub:excluded');
+    let excluded = [];
+    if (excludedRaw) {
+      try { excluded = JSON.parse(excludedRaw); } catch {}
+    }
+    if (!excluded.includes(name)) {
+      excluded.push(name);
+      await env.SUB_STORE.put('sub:excluded', JSON.stringify(excluded));
+    }
+
+    const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    if (fixedId) {
+      await saveMergedPayload(env, fixedId);
+    }
+
+    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
+    return json({
+      ok: true,
+      counts: {
+        preferredNodes: preferredCount,
+        aggregateNodes: aggregateCount,
+        totalNodes: preferredCount + aggregateCount,
+      },
+      preview: nodes.map((node) => ({
+        name: node.name,
+        type: node.type,
+        server: node.server,
+        port: node.port,
+        host: node.host || '',
+        sni: node.sni || '',
+      })),
+      excluded,
+    });
+  } catch (err) {
+    return json({ ok: false, error: '排除节点错误: ' + (err.message || String(err)) }, 500);
+  }
+}
+
+async function handleResetExcluded(request, env, url) {
+  try {
+    const tokenCheck = validateToken(request, url, env);
+    if (!tokenCheck.ok) return tokenCheck.response;
+
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
+
+    await env.SUB_STORE.delete('sub:excluded');
+
+    const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    if (fixedId) {
+      await saveMergedPayload(env, fixedId);
+    }
+
+    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
+    return json({
+      ok: true,
+      counts: {
+        preferredNodes: preferredCount,
+        aggregateNodes: aggregateCount,
+        totalNodes: preferredCount + aggregateCount,
+      },
+      preview: nodes.map((node) => ({
+        name: node.name,
+        type: node.type,
+        server: node.server,
+        port: node.port,
+        host: node.host || '',
+        sni: node.sni || '',
+      })),
+      excluded: [],
+    });
+  } catch (err) {
+    return json({ ok: false, error: '重置排除列表错误: ' + (err.message || String(err)) }, 500);
   }
 }
 
@@ -835,6 +940,14 @@ export default {
 
       if (request.method === 'POST' && url.pathname === '/api/update-url') {
         return handleUpdateUrl(request, env, url);
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/exclude-node') {
+        return handleExcludeNode(request, env);
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/reset-excluded') {
+        return handleResetExcluded(request, env, url);
       }
 
       if (request.method === 'GET' && url.pathname.startsWith('/sub/')) {

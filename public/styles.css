@@ -882,7 +882,9 @@ button.warning:hover {
 }
 
 .url-actions button {
-  flex: 1;
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  font-size: 0.8rem;
 }
 
 .url-hint {
@@ -1097,8 +1099,62 @@ button.warning:hover {
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: var(--muted);
-  margin: 0 0 16px;
+  margin: 0;
   font-weight: 700;
+}
+
+.preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.col-action {
+  width: 60px;
+  text-align: center;
+}
+
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.btn-delete:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.btn-delete svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.page-info {
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-width: 60px;
+  text-align: center;
 }
 
 .table-wrap {
