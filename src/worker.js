@@ -524,20 +524,30 @@ async function handleGetSubscription(request, env, url) {
     const bindCheck = checkBindings(env);
     if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
 
-    const [dataRaw, fixedId] = await Promise.all([
+    const [dataRaw, aggRaw, fixedId] = await Promise.all([
       env.SUB_STORE.get('sub:data'),
+      env.SUB_STORE.get('sub:aggregate'),
       env.SUB_STORE.get('sub:fixed-id'),
     ]);
 
-    if (!dataRaw) {
+    const hasPreferred = Boolean(dataRaw);
+    const hasAggregate = Boolean(aggRaw);
+
+    if (!hasPreferred && !hasAggregate) {
       return json({ ok: true, exists: false });
     }
 
-    const data = JSON.parse(dataRaw);
+    const data = hasPreferred ? JSON.parse(dataRaw) : {};
     const result = {
       ok: true,
       exists: true,
-      config: data,
+      preferred: {
+        nodeLinks: data.nodeLinks || '',
+        preferredIps: data.preferredIps || '',
+        namePrefix: data.namePrefix || '',
+        keepOriginalHost: data.keepOriginalHost !== false,
+      },
+      aggregate: hasAggregate ? JSON.parse(aggRaw) : { nodeLinks: '' },
       fixedId: fixedId || null,
     };
 
@@ -546,14 +556,13 @@ async function handleGetSubscription(request, env, url) {
       if (subRaw) {
         const sub = JSON.parse(subRaw);
         const nodes = sub.nodes || [];
-        const baseNodes = parseRawLinks(data.nodeLinks || '');
-        const preferredEndpoints = parsePreferredEndpoints(data.preferredIps || '');
+        const { preferredCount, aggregateCount } = await buildMergedNodes(env);
         result.counts = {
-          inputNodes: baseNodes.length,
-          preferredEndpoints: preferredEndpoints.length,
-          outputNodes: nodes.length,
+          preferredNodes: preferredCount,
+          aggregateNodes: aggregateCount,
+          totalNodes: preferredCount + aggregateCount,
         };
-        result.preview = nodes.slice(0, 20).map((node) => ({
+        result.preview = nodes.map((node) => ({
           name: node.name,
           type: node.type,
           server: node.server,
@@ -585,25 +594,33 @@ async function handleUpdateSubscription(request, env, url) {
       return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
     }
 
-    const baseNodes = parseRawLinks(body.nodeLinks || '');
-    const preferredEndpoints = parsePreferredEndpoints(body.preferredIps || '');
+    const mode = body.mode || 'preferred';
 
-    if (!baseNodes.length) return json({ ok: false, error: '没有识别到可用节点' }, 400);
-    if (!preferredEndpoints.length) return json({ ok: false, error: '没有识别到可用优选地址' }, 400);
+    if (mode === 'preferred') {
+      const baseNodes = parseRawLinks(body.nodeLinks || '');
+      const preferredEndpoints = parsePreferredEndpoints(body.preferredIps || '');
 
-    const options = {
-      namePrefix: body.namePrefix || '',
-      keepOriginalHost: body.keepOriginalHost !== false,
-    };
+      if (!baseNodes.length) return json({ ok: false, error: '没有识别到可用节点' }, 400);
+      if (!preferredEndpoints.length) return json({ ok: false, error: '没有识别到可用优选地址' }, 400);
 
-    const nodes = buildNodes(baseNodes, preferredEndpoints, options);
-
-    await env.SUB_STORE.put('sub:data', JSON.stringify({
-      nodeLinks: body.nodeLinks || '',
-      preferredIps: body.preferredIps || '',
-      namePrefix: body.namePrefix || '',
-      keepOriginalHost: body.keepOriginalHost !== false,
-    }));
+      await env.SUB_STORE.put('sub:data', JSON.stringify({
+        nodeLinks: body.nodeLinks || '',
+        preferredIps: body.preferredIps || '',
+        namePrefix: body.namePrefix || '',
+        keepOriginalHost: body.keepOriginalHost !== false,
+      }));
+    } else if (mode === 'aggregate') {
+      const baseNodes = parseRawLinks(body.nodeLinks || '');
+      if (!baseNodes.length) {
+        await env.SUB_STORE.delete('sub:aggregate');
+      } else {
+        await env.SUB_STORE.put('sub:aggregate', JSON.stringify({
+          nodeLinks: body.nodeLinks || '',
+        }));
+      }
+    } else {
+      return json({ ok: false, error: '不支持的 mode，请使用 preferred 或 aggregate' }, 400);
+    }
 
     // Get or create fixed ID
     let fixedId = await env.SUB_STORE.get('sub:fixed-id');
@@ -614,14 +631,8 @@ async function handleUpdateSubscription(request, env, url) {
       isNew = true;
     }
 
-    // Save rendered payload
-    const payload = {
-      version: 1,
-      updatedAt: new Date().toISOString(),
-      options,
-      nodes,
-    };
-    await env.SUB_STORE.put(`sub:${fixedId}`, JSON.stringify(payload));
+    // Rebuild merged payload
+    const { nodes, preferredCount, aggregateCount } = await saveMergedPayload(env, fixedId);
 
     const origin = url.origin;
     const accessToken = env.SUB_ACCESS_TOKEN || '';
@@ -637,11 +648,11 @@ async function handleUpdateSubscription(request, env, url) {
         surge: buildSubUrl(origin, fixedId, 'surge', accessToken),
       },
       counts: {
-        inputNodes: baseNodes.length,
-        preferredEndpoints: preferredEndpoints.length,
-        outputNodes: nodes.length,
+        preferredNodes: preferredCount,
+        aggregateNodes: aggregateCount,
+        totalNodes: preferredCount + aggregateCount,
       },
-      preview: nodes.slice(0, 20).map((node) => ({
+      preview: nodes.map((node) => ({
         name: node.name,
         type: node.type,
         server: node.server,
