@@ -5,6 +5,7 @@ import {
   expandNodes,
   parseNodeLinks,
   parsePreferredEndpoints,
+  prefixAggregateNodes,
   renderClashSubscription,
   renderRawSubscription,
   renderSurgeSubscription,
@@ -41,5 +42,22 @@ const secret = 'this-is-a-very-secret-key';
 const token = await encryptPayload({ nodes: expanded.nodes }, secret);
 const payload = await decryptPayload(token, secret);
 assert.equal(payload.nodes.length, 2);
+
+// Test aggregate mode node prefixing
+const aggregateNodes = prefixAggregateNodes(nodes);
+assert.equal(aggregateNodes.length, 1);
+assert.equal(aggregateNodes[0].name, 'demo-ws-tls | 聚合');
+assert.equal(aggregateNodes[0].server, 'edge.example.com');
+
+// Test default preferred prefix in expandNodes
+const expandedDefault = expandNodes(nodes, endpoints, { keepOriginalHost: true });
+assert.ok(expandedDefault.nodes[0].name.includes(' | 优选-1'), 'default preferred prefix should contain "优选-1"');
+assert.ok(expandedDefault.nodes[0].name.includes('优选'), 'default preferred prefix should contain "优选"');
+
+// Test merge order: preferred nodes first, then aggregate
+const mergedNodes = [...expandedDefault.nodes, ...aggregateNodes];
+assert.equal(mergedNodes.length, 3);
+assert.ok(mergedNodes[0].name.includes('优选'));
+assert.ok(mergedNodes[2].name.includes('聚合'));
 
 console.log('smoke test passed');
