@@ -486,16 +486,29 @@ clientTabs.forEach((tab) => {
 });
 
 // Mode tab switching
+function setActiveMode(mode) {
+  modeTabs.forEach((t) => t.classList.remove('active'));
+  modeForms.forEach((f) => f.classList.remove('active'));
+  const targetTab = document.querySelector(`.mode-tab[data-mode="${mode}"]`);
+  const targetForm = document.getElementById(`generator-form-${mode}`);
+  if (targetTab) targetTab.classList.add('active');
+  if (targetForm) targetForm.classList.add('active');
+}
+
 modeTabs.forEach((tab) => {
   tab.addEventListener('click', () => {
     const mode = tab.dataset.mode;
-    modeTabs.forEach((t) => t.classList.remove('active'));
-    tab.classList.add('active');
-    modeForms.forEach((f) => f.classList.remove('active'));
-    const targetForm = document.getElementById(`generator-form-${mode}`);
-    if (targetForm) targetForm.classList.add('active');
+    setActiveMode(mode);
+    localStorage.setItem('activeMode', mode);
   });
 });
+
+function restoreActiveMode() {
+  const saved = localStorage.getItem('activeMode');
+  if (saved === 'preferred' || saved === 'aggregate') {
+    setActiveMode(saved);
+  }
+}
 
 // Theme toggle
 function initTheme() {
@@ -529,6 +542,7 @@ document.getElementById('emptyStateCta')?.addEventListener('click', () => {
 if (getToken()) {
   hideLogin();
   loadConfig();
+  restoreActiveMode();
 } else {
   showLogin();
 }
