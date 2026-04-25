@@ -659,6 +659,9 @@ function renderClashProxy(node) {
   if (node.type === 'trojan') {
     lines.push(`    password: ${yamlQuote(node.password)}`);
   }
+  if (node.type === 'hysteria2') {
+    lines.push(`    password: ${yamlQuote(node.password)}`);
+  }
 
   if (node.tls) {
     lines.push('    tls: true');
@@ -673,6 +676,18 @@ function renderClashProxy(node) {
       lines.push(`    client-fingerprint: ${yamlQuote(node.fp)}`);
     }
     lines.push(`    skip-cert-verify: ${node.allowInsecure ? 'true' : 'false'}`);
+  }
+
+  if (node.type === 'hysteria2') {
+    if (node.obfs) {
+      lines.push(`    obfs: ${yamlQuote(node.obfs)}`);
+    }
+    if (node.obfsPassword) {
+      lines.push(`    obfs-password: ${yamlQuote(node.obfsPassword)}`);
+    }
+    if (node.ech) {
+      lines.push(`    ech: ${yamlQuote(node.ech)}`);
+    }
   }
 
   lines.push(`    network: ${node.network || 'tcp'}`);
@@ -768,7 +783,7 @@ function getEffectiveTlsHost(node) {
 }
 
 function isClashSupportedNode(node) {
-  return ['vmess', 'vless', 'trojan'].includes(node.type);
+  return ['vmess', 'vless', 'trojan', 'hysteria2'].includes(node.type);
 }
 
 function isTlsEnabled(value) {
