@@ -3,7 +3,7 @@ const textDecoder = new TextDecoder();
 
 const DEFAULT_TEST_URL = 'http://cp.cloudflare.com/generate_204';
 
-export const SUPPORTED_PROTOCOLS = ['vmess', 'vless', 'trojan'];
+export const SUPPORTED_PROTOCOLS = ['vmess', 'vless', 'trojan', 'hysteria2'];
 
 export function normalizeText(value = '') {
   return String(value).replace(/\r\n?/g, '\n').trim();
@@ -411,6 +411,37 @@ function maybeExpandRawSubscription(inputText) {
   return text;
 }
 
+function parseHysteria2Uri(uri) {
+  const url = new URL(uri);
+  const password = decodeURIComponent(url.username || '').trim();
+  const server = url.hostname;
+  const port = normalizePort(url.port || url.searchParams.get('port'), 443);
+  if (!server || !password) {
+    throw new Error('Hysteria2 链接缺少 server 或 password');
+  }
+
+  const security = (url.searchParams.get('security') || '').toLowerCase();
+  const allowInsecureRaw = url.searchParams.get('allowInsecure') || url.searchParams.get('insecure') || '';
+
+  return {
+    type: 'hysteria2',
+    name: decodeHashName(url.hash) || 'hysteria2',
+    server,
+    originalServer: server,
+    port,
+    password,
+    tls: security === 'tls',
+    sni: String(url.searchParams.get('sni') || '').trim(),
+    fp: String(url.searchParams.get('fp') || '').trim(),
+    alpn: splitListValue(url.searchParams.get('alpn')),
+    ech: String(url.searchParams.get('ech') || '').trim(),
+    obfs: String(url.searchParams.get('obfs') || '').trim(),
+    obfsPassword: String(url.searchParams.get('obfs-password') || '').trim(),
+    allowInsecure: toBoolean(allowInsecureRaw),
+    params: {},
+  };
+}
+
 function parseSingleNode(uri) {
   const lower = uri.toLowerCase();
   if (lower.startsWith('vmess://')) {
@@ -422,7 +453,10 @@ function parseSingleNode(uri) {
   if (lower.startsWith('trojan://')) {
     return parseTrojanUri(uri);
   }
-  throw new Error('只支持 vmess://、vless://、trojan://');
+  if (lower.startsWith('hysteria2://')) {
+    return parseHysteria2Uri(uri);
+  }
+  throw new Error('只支持 vmess://、vless://、trojan://、hysteria2://');
 }
 
 function parseVmessUri(uri) {
