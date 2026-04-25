@@ -517,12 +517,21 @@ function renderClash(nodes) {
 
 function renderSurge(nodes, baseUrl, accessToken) {
   const proxies = nodes
-    .filter((node) => node.type === 'vmess' || node.type === 'trojan')
+    .filter((node) => node.type === 'vmess' || node.type === 'trojan' || node.type === 'hysteria2')
     .map((node) => {
       if (node.type === 'vmess') {
         return `${node.name} = vmess, ${node.server}, ${node.port}, username=${node.uuid}, ws=true, ws-path=${node.path || '/'}, ws-headers=Host:${node.host || ''}, tls=${node.tls ? 'true' : 'false'}, sni=${node.sni || ''}`;
       }
-      return `${node.name} = trojan, ${node.server}, ${node.port}, password=${node.password || ''}, sni=${node.sni || ''}`;
+      if (node.type === 'trojan') {
+        return `${node.name} = trojan, ${node.server}, ${node.port}, password=${node.password || ''}, sni=${node.sni || ''}`;
+      }
+      // hysteria2
+      const params = [`password=${node.password}`, `skip-cert-verify=${node.allowInsecure ? 'true' : 'false'}`];
+      if (node.sni) params.push(`sni=${node.sni}`);
+      if (node.obfs) params.push(`obfs=${node.obfs}`);
+      if (node.obfsPassword) params.push(`obfs-password=${node.obfsPassword}`);
+      if (node.fp) params.push(`fingerprint=${node.fp}`);
+      return `${node.name} = hysteria2, ${node.server}, ${node.port}, ${params.join(', ')}`;
     });
 
   return [
@@ -535,7 +544,7 @@ function renderSurge(nodes, baseUrl, accessToken) {
     '[Proxy Group]',
     'Proxy = select, ' +
       nodes
-        .filter((n) => n.type === 'vmess' || n.type === 'trojan')
+        .filter((n) => n.type === 'vmess' || n.type === 'trojan' || n.type === 'hysteria2')
         .map((n) => n.name)
         .join(', '),
     '',
