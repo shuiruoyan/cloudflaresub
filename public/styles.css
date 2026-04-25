@@ -1185,6 +1185,7 @@ button.warning:hover:not(:disabled) {
 /* ===== Preview Table ===== */
 #previewSection {
   margin-top: 28px;
+  padding: 28px;
 }
 
 .preview-wrap h3 {
