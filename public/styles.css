@@ -1239,6 +1239,9 @@ button.warning:hover {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .table-wrap tr:last-child td {
