@@ -793,6 +793,11 @@ async function handleUpdateSubscription(request, env, url) {
       if (!baseNodes.length) return json({ ok: false, error: '没有识别到可用节点' }, 400);
       if (!preferredEndpoints.length) return json({ ok: false, error: '没有识别到可用优选地址' }, 400);
 
+      const hy2Nodes = baseNodes.filter((n) => n.type === 'hysteria2');
+      if (hy2Nodes.length) {
+        return json({ ok: false, error: `优选 IP 模式不支持 Hysteria2 节点（检测到 ${hy2Nodes.length} 个）。请切换到聚合模式，或移除 Hysteria2 链接。` }, 400);
+      }
+
       await env.SUB_STORE.put('sub:data', JSON.stringify({
         nodeLinks: body.nodeLinks || '',
         preferredIps: body.preferredIps || '',
