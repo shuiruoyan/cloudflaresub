@@ -324,6 +324,11 @@ h1, h2, h3, .eyebrow {
   align-items: end;
 }
 
+.compact.inline-fields {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
 .stack-lg > * + * {
   margin-top: 20px;
 }
