@@ -158,13 +158,14 @@ let pageSize = 20;
 let excludedNames = new Set();
 
 // Filter & sort state
-let filterNameValue = '';
-let filterTypeValue = '';
+const columnFilters = {
+  name: '',
+  type: '',
+  server: '',
+  port: '',
+};
 let sortField = '';
 let sortOrder = ''; // 'asc' | 'desc' | ''
-
-const filterNameInput = document.getElementById('filterName');
-const filterTypeSelect = document.getElementById('filterType');
 
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);
@@ -270,14 +271,11 @@ function updateBatchDeleteButton() {
 function filterAndSortData() {
   let data = previewAllData.slice();
 
-  if (filterNameValue) {
-    const q = filterNameValue.toLowerCase();
-    data = data.filter((item) => String(item.name).toLowerCase().includes(q));
-  }
-
-  if (filterTypeValue) {
-    data = data.filter((item) => item.type === filterTypeValue);
-  }
+  Object.entries(columnFilters).forEach(([field, value]) => {
+    if (!value) return;
+    const q = String(value).toLowerCase();
+    data = data.filter((item) => String(item[field]).toLowerCase().includes(q));
+  });
 
   if (sortField && sortOrder) {
     data.sort((a, b) => {
@@ -330,12 +328,11 @@ function showPreview(preview, excluded) {
   resetExcludedBtn.textContent = excludedNames.size > 0 ? `重置排除 (${excludedNames.size})` : '重置排除';
 
   // Reset filters and sort on data refresh
-  filterNameValue = '';
-  filterTypeValue = '';
+  Object.keys(columnFilters).forEach((k) => { columnFilters[k] = ''; });
   sortField = '';
   sortOrder = '';
-  if (filterNameInput) filterNameInput.value = '';
-  if (filterTypeSelect) filterTypeSelect.value = '';
+  document.querySelectorAll('.th-filter-popover input, .th-filter-popover select').forEach((el) => { el.value = ''; });
+  document.querySelectorAll('.th-filter-icon').forEach((icon) => { icon.classList.remove('active'); });
   document.querySelectorAll('th.sortable').forEach((th) => {
     th.classList.remove('sort-asc', 'sort-desc');
   });
@@ -570,6 +567,22 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  const filterIcon = event.target.closest('.th-filter-icon');
+  if (filterIcon) {
+    const field = filterIcon.dataset.filter;
+    const popover = document.querySelector(`.th-filter-popover[data-filter-popover="${field}"]`);
+    if (popover) {
+      const wasHidden = popover.classList.contains('hidden');
+      document.querySelectorAll('.th-filter-popover').forEach((el) => el.classList.add('hidden'));
+      if (wasHidden) {
+        popover.classList.remove('hidden');
+        const input = popover.querySelector('input, select');
+        if (input) input.focus();
+      }
+    }
+    return;
+  }
+
   const sortHeader = event.target.closest('th[data-sort]');
   if (sortHeader) {
     const field = sortHeader.dataset.sort;
@@ -643,22 +656,38 @@ pageSizeSelect.addEventListener('change', () => {
   applyPreviewPage();
 });
 
-// Filter handlers
-if (filterNameInput) {
-  filterNameInput.addEventListener('input', () => {
-    filterNameValue = filterNameInput.value;
-    currentPage = 1;
-    applyPreviewPage();
-  });
-}
+// Column filter: popover input/select handlers (delegated)
+document.addEventListener('input', (event) => {
+  const popover = event.target.closest('.th-filter-popover');
+  if (!popover) return;
+  const field = popover.dataset.filterPopover;
+  if (!field) return;
+  columnFilters[field] = event.target.value;
+  const icon = document.querySelector(`.th-filter-icon[data-filter="${field}"]`);
+  if (icon) icon.classList.toggle('active', Boolean(columnFilters[field]));
+  currentPage = 1;
+  applyPreviewPage();
+});
 
-if (filterTypeSelect) {
-  filterTypeSelect.addEventListener('change', () => {
-    filterTypeValue = filterTypeSelect.value;
-    currentPage = 1;
-    applyPreviewPage();
-  });
-}
+document.addEventListener('change', (event) => {
+  const popover = event.target.closest('.th-filter-popover');
+  if (!popover) return;
+  const field = popover.dataset.filterPopover;
+  if (!field) return;
+  columnFilters[field] = event.target.value;
+  const icon = document.querySelector(`.th-filter-icon[data-filter="${field}"]`);
+  if (icon) icon.classList.toggle('active', Boolean(columnFilters[field]));
+  currentPage = 1;
+  applyPreviewPage();
+});
+
+// Close filter popovers when clicking outside the table
+document.addEventListener('click', (event) => {
+  if (event.target.closest('.th-filter-icon') || event.target.closest('.th-filter-popover')) {
+    return;
+  }
+  document.querySelectorAll('.th-filter-popover').forEach((el) => el.classList.add('hidden'));
+});
 
 // Exclude / reset handlers
 async function excludeNode(name) {

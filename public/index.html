@@ -281,16 +281,6 @@ cf.example.com:443#US-Edge"
               <button id="batchDeleteBtn" type="button" class="btn-danger small">批量删除</button>
               <button id="resetExcludedBtn" type="button" class="secondary small">重置排除</button>
             </div>
-            <div class="toolbar-filter">
-              <input type="text" id="filterName" placeholder="搜索名称..." />
-              <select id="filterType">
-                <option value="">全部类型</option>
-                <option value="vmess">vmess</option>
-                <option value="vless">vless</option>
-                <option value="trojan">trojan</option>
-                <option value="hysteria2">hysteria2</option>
-              </select>
-            </div>
             <div id="pagination" class="pagination hidden">
               <button type="button" id="prevPage" class="secondary small">上一页</button>
               <span id="pageInfo" class="page-info"></span>
@@ -312,10 +302,48 @@ cf.example.com:443#US-Edge"
                 <tr>
                   <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
                   <th class="col-index">#</th>
-                  <th class="sortable" data-sort="name">名称</th>
-                  <th class="sortable" data-sort="type">类型</th>
-                  <th class="sortable" data-sort="server">服务器</th>
-                  <th class="sortable" data-sort="port">端口</th>
+                  <th class="sortable" data-sort="name">
+                    <div class="th-content">
+                      <span>名称</span>
+                      <svg class="th-filter-icon" data-filter="name" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    </div>
+                    <div class="th-filter-popover hidden" data-filter-popover="name">
+                      <input type="text" placeholder="搜索名称..." />
+                    </div>
+                  </th>
+                  <th class="sortable" data-sort="type">
+                    <div class="th-content">
+                      <span>类型</span>
+                      <svg class="th-filter-icon" data-filter="type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    </div>
+                    <div class="th-filter-popover hidden" data-filter-popover="type">
+                      <select>
+                        <option value="">全部</option>
+                        <option value="vmess">vmess</option>
+                        <option value="vless">vless</option>
+                        <option value="trojan">trojan</option>
+                        <option value="hysteria2">hysteria2</option>
+                      </select>
+                    </div>
+                  </th>
+                  <th class="sortable" data-sort="server">
+                    <div class="th-content">
+                      <span>服务器</span>
+                      <svg class="th-filter-icon" data-filter="server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    </div>
+                    <div class="th-filter-popover hidden" data-filter-popover="server">
+                      <input type="text" placeholder="搜索服务器..." />
+                    </div>
+                  </th>
+                  <th class="sortable" data-sort="port">
+                    <div class="th-content">
+                      <span>端口</span>
+                      <svg class="th-filter-icon" data-filter="port" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    </div>
+                    <div class="th-filter-popover hidden" data-filter-popover="port">
+                      <input type="text" placeholder="搜索端口..." />
+                    </div>
+                  </th>
                   <th>Host</th>
                   <th>SNI</th>
                   <th class="col-action">操作</th>

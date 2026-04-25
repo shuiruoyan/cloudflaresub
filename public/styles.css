@@ -1216,40 +1216,6 @@ button.warning:hover {
   gap: 8px;
 }
 
-.toolbar-filter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.toolbar-filter input,
-.toolbar-filter select {
-  background: rgba(4, 6, 12, 0.6);
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  padding: 6px 10px;
-  color: var(--text);
-  font-size: 0.85rem;
-  font-family: inherit;
-  outline: none;
-}
-
-.toolbar-filter input::placeholder {
-  color: var(--muted);
-}
-
-.toolbar-filter input:focus,
-.toolbar-filter select:focus {
-  border-color: var(--accent);
-}
-
-[data-theme="light"] .toolbar-filter input,
-[data-theme="light"] .toolbar-filter select {
-  background: rgba(255, 255, 255, 0.7);
-  border-color: var(--card-border);
-}
-
 .pagination {
   display: flex;
   align-items: center;
@@ -1354,6 +1320,71 @@ button.warning:hover {
   content: '▼';
   font-size: 0.65em;
   color: var(--accent);
+}
+
+.table-wrap th {
+  position: relative;
+}
+
+.th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.th-filter-icon {
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.th-filter-icon:hover {
+  color: var(--text);
+}
+
+.th-filter-icon.active {
+  color: var(--accent);
+}
+
+.th-filter-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 8px;
+  min-width: 140px;
+  box-shadow: var(--shadow);
+}
+
+.th-filter-popover input,
+.th-filter-popover select {
+  width: 100%;
+  background: rgba(4, 6, 12, 0.6);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.th-filter-popover input:focus,
+.th-filter-popover select:focus {
+  border-color: var(--accent);
+}
+
+[data-theme="light"] .th-filter-popover input,
+[data-theme="light"] .th-filter-popover select {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--card-border);
 }
 
 .table-wrap tr:last-child td {
