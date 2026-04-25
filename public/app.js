@@ -588,6 +588,10 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  if (event.target.closest('.th-filter-popover')) {
+    return;
+  }
+
   const sortHeader = event.target.closest('th[data-sort]');
   if (sortHeader) {
     const field = sortHeader.dataset.sort;
