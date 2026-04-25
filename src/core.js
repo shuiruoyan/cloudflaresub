@@ -769,7 +769,21 @@ function renderSurgeProxy(node) {
       trojanParams.push(`ws-headers=Host:"${escapeSurgeHeader(node.hostHeader)}"`);
     }
   }
-  return `${name} = trojan, ${formatHostForUrl(node.server)}, ${node.port}, ${trojanParams.join(', ')}`;
+  if (node.type === 'trojan') {
+    return `${name} = trojan, ${formatHostForUrl(node.server)}, ${node.port}, ${trojanParams.join(', ')}`;
+  }
+
+  // hysteria2
+  const hy2Params = [
+    `password=${node.password}`,
+    `skip-cert-verify=${node.allowInsecure ? 'true' : 'false'}`,
+  ];
+  const hy2Sni = getEffectiveTlsHost(node);
+  if (hy2Sni) hy2Params.push(`sni=${hy2Sni}`);
+  if (node.obfs) hy2Params.push(`obfs=${node.obfs}`);
+  if (node.obfsPassword) hy2Params.push(`obfs-password=${node.obfsPassword}`);
+  if (node.fp) hy2Params.push(`fingerprint=${node.fp}`);
+  return `${name} = hysteria2, ${formatHostForUrl(node.server)}, ${node.port}, ${hy2Params.join(', ')}`;
 }
 
 function buildNodeName(baseName, suffix) {
