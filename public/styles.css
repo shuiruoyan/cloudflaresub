@@ -201,6 +201,8 @@ h1, h2, h3, .eyebrow {
   padding: 24px;
   margin-bottom: 28px;
   align-items: center;
+  position: relative;
+  z-index: 10;
 }
 
 .hero :is(h1, h2, h3, p) {

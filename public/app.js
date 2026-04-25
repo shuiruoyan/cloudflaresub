@@ -885,9 +885,19 @@ function setupThemeSelector() {
   const dropdown = document.getElementById('themeSelectorDropdown');
   if (!trigger || !dropdown) return;
 
+  function positionDropdown() {
+    const rect = trigger.getBoundingClientRect();
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = `${rect.bottom + 8}px`;
+    dropdown.style.left = `${rect.left}px`;
+    dropdown.style.right = 'auto';
+    dropdown.style.width = `${rect.width}px`;
+  }
+
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
     const isHidden = dropdown.classList.toggle('hidden');
+    if (!isHidden) positionDropdown();
     trigger.setAttribute('aria-expanded', String(!isHidden));
   });
 
@@ -901,6 +911,18 @@ function setupThemeSelector() {
     if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
       dropdown.classList.add('hidden');
       trigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  window.addEventListener('scroll', () => {
+    if (!dropdown.classList.contains('hidden')) {
+      positionDropdown();
+    }
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (!dropdown.classList.contains('hidden')) {
+      positionDropdown();
     }
   });
 }
