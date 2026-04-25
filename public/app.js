@@ -157,6 +157,15 @@ let currentPage = 1;
 let pageSize = 20;
 let excludedNames = new Set();
 
+// Filter & sort state
+let filterNameValue = '';
+let filterTypeValue = '';
+let sortField = '';
+let sortOrder = ''; // 'asc' | 'desc' | ''
+
+const filterNameInput = document.getElementById('filterName');
+const filterTypeSelect = document.getElementById('filterType');
+
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);
   location.reload();
@@ -243,7 +252,8 @@ function renderPreviewRows(preview, startIndex = 1) {
 }
 
 function renderPagination() {
-  const total = previewAllData.length;
+  const displayData = filterAndSortData();
+  const total = displayData.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   pagination.classList.remove('hidden');
   pageInfo.textContent = `${currentPage} / ${totalPages}`;
@@ -257,11 +267,41 @@ function updateBatchDeleteButton() {
   batchDeleteBtn.disabled = checked.length === 0;
 }
 
+function filterAndSortData() {
+  let data = previewAllData.slice();
+
+  if (filterNameValue) {
+    const q = filterNameValue.toLowerCase();
+    data = data.filter((item) => String(item.name).toLowerCase().includes(q));
+  }
+
+  if (filterTypeValue) {
+    data = data.filter((item) => item.type === filterTypeValue);
+  }
+
+  if (sortField && sortOrder) {
+    data.sort((a, b) => {
+      const va = a[sortField];
+      const vb = b[sortField];
+      let cmp = 0;
+      if (sortField === 'port') {
+        cmp = (Number(va) || 0) - (Number(vb) || 0);
+      } else {
+        cmp = String(va).localeCompare(String(vb), 'zh-CN');
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  return data;
+}
+
 function applyPreviewPage() {
-  const totalPages = Math.max(1, Math.ceil(previewAllData.length / pageSize));
+  const displayData = filterAndSortData();
+  const totalPages = Math.max(1, Math.ceil(displayData.length / pageSize));
   if (currentPage > totalPages) currentPage = totalPages || 1;
   const start = (currentPage - 1) * pageSize;
-  const pageData = previewAllData.slice(start, start + pageSize);
+  const pageData = displayData.slice(start, start + pageSize);
   previewBody.innerHTML = renderPreviewRows(pageData, start + 1);
   selectAll.checked = false;
   renderPagination();
@@ -288,6 +328,18 @@ function showPreview(preview, excluded) {
     excludedNames = new Set(excluded);
   }
   resetExcludedBtn.textContent = excludedNames.size > 0 ? `重置排除 (${excludedNames.size})` : '重置排除';
+
+  // Reset filters and sort on data refresh
+  filterNameValue = '';
+  filterTypeValue = '';
+  sortField = '';
+  sortOrder = '';
+  if (filterNameInput) filterNameInput.value = '';
+  if (filterTypeSelect) filterTypeSelect.value = '';
+  document.querySelectorAll('th.sortable').forEach((th) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+  });
+
   currentPage = 1;
   if (previewAllData.length > 0) {
     applyPreviewPage();
@@ -517,6 +569,26 @@ document.addEventListener('click', async (event) => {
     selectAll.checked = allBoxes.length > 0 && allBoxes.length === checkedBoxes.length;
     return;
   }
+
+  const sortHeader = event.target.closest('th[data-sort]');
+  if (sortHeader) {
+    const field = sortHeader.dataset.sort;
+    if (sortField === field) {
+      sortOrder = sortOrder === 'asc' ? 'desc' : (sortOrder === 'desc' ? '' : 'asc');
+    } else {
+      sortField = field;
+      sortOrder = 'asc';
+    }
+    document.querySelectorAll('th[data-sort]').forEach((th) => {
+      th.classList.remove('sort-asc', 'sort-desc');
+    });
+    if (sortOrder) {
+      sortHeader.classList.add(sortOrder === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+    currentPage = 1;
+    applyPreviewPage();
+    return;
+  }
 });
 
 closeQrModal.addEventListener('click', closeQrDialog);
@@ -570,6 +642,23 @@ pageSizeSelect.addEventListener('change', () => {
   currentPage = 1;
   applyPreviewPage();
 });
+
+// Filter handlers
+if (filterNameInput) {
+  filterNameInput.addEventListener('input', () => {
+    filterNameValue = filterNameInput.value;
+    currentPage = 1;
+    applyPreviewPage();
+  });
+}
+
+if (filterTypeSelect) {
+  filterTypeSelect.addEventListener('change', () => {
+    filterTypeValue = filterTypeSelect.value;
+    currentPage = 1;
+    applyPreviewPage();
+  });
+}
 
 // Exclude / reset handlers
 async function excludeNode(name) {

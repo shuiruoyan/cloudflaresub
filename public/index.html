@@ -281,6 +281,16 @@ cf.example.com:443#US-Edge"
               <button id="batchDeleteBtn" type="button" class="btn-danger small">批量删除</button>
               <button id="resetExcludedBtn" type="button" class="secondary small">重置排除</button>
             </div>
+            <div class="toolbar-filter">
+              <input type="text" id="filterName" placeholder="搜索名称..." />
+              <select id="filterType">
+                <option value="">全部类型</option>
+                <option value="vmess">vmess</option>
+                <option value="vless">vless</option>
+                <option value="trojan">trojan</option>
+                <option value="hysteria2">hysteria2</option>
+              </select>
+            </div>
             <div id="pagination" class="pagination hidden">
               <button type="button" id="prevPage" class="secondary small">上一页</button>
               <span id="pageInfo" class="page-info"></span>
@@ -302,10 +312,10 @@ cf.example.com:443#US-Edge"
                 <tr>
                   <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
                   <th class="col-index">#</th>
-                  <th>名称</th>
-                  <th>类型</th>
-                  <th>服务器</th>
-                  <th>端口</th>
+                  <th class="sortable" data-sort="name">名称</th>
+                  <th class="sortable" data-sort="type">类型</th>
+                  <th class="sortable" data-sort="server">服务器</th>
+                  <th class="sortable" data-sort="port">端口</th>
                   <th>Host</th>
                   <th>SNI</th>
                   <th class="col-action">操作</th>

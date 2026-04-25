@@ -1216,6 +1216,40 @@ button.warning:hover {
   gap: 8px;
 }
 
+.toolbar-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-filter input,
+.toolbar-filter select {
+  background: rgba(4, 6, 12, 0.6);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.toolbar-filter input::placeholder {
+  color: var(--muted);
+}
+
+.toolbar-filter input:focus,
+.toolbar-filter select:focus {
+  border-color: var(--accent);
+}
+
+[data-theme="light"] .toolbar-filter input,
+[data-theme="light"] .toolbar-filter select {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--card-border);
+}
+
 .pagination {
   display: flex;
   align-items: center;
@@ -1292,6 +1326,34 @@ button.warning:hover {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
+}
+
+.table-wrap th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table-wrap th.sortable:hover {
+  color: var(--text);
+}
+
+.table-wrap th.sortable::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  margin-left: 4px;
+}
+
+.table-wrap th.sort-asc::after {
+  content: '▲';
+  font-size: 0.65em;
+  color: var(--accent);
+}
+
+.table-wrap th.sort-desc::after {
+  content: '▼';
+  font-size: 0.65em;
+  color: var(--accent);
 }
 
 .table-wrap tr:last-child td {
