@@ -2002,14 +2002,14 @@ button.warning:hover:not(:disabled) {
 .mode-tabs {
   display: flex;
   gap: 4px;
-  padding: 6px;
+  padding: 5px;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
+  justify-content: center;
 }
 
 .mode-tab {
-  flex: 1;
-  padding: 12px 16px;
+  padding: 7px 16px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -2017,8 +2017,9 @@ button.warning:hover:not(:disabled) {
   text-align: left;
   transition: all 0.2s ease;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
 
 .mode-tab:hover {
@@ -2031,22 +2032,22 @@ button.warning:hover:not(:disabled) {
 }
 
 .mode-tab-icon {
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 5px;
   background: rgba(from var(--accent) r g b / 0.08);
   border: 1px solid rgba(from var(--accent) r g b / 0.12);
   color: var(--accent);
-  margin-bottom: 4px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .mode-tab-icon svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 .mode-tab:hover .mode-tab-icon {
@@ -2060,26 +2061,18 @@ button.warning:hover:not(:disabled) {
 }
 
 .mode-tab-name {
-  display: block;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .mode-tab-desc {
-  display: block;
-  font-size: 0.74rem;
-  color: var(--muted);
-  line-height: 1.4;
+  display: none;
 }
 
 .mode-tab.active .mode-tab-name {
   color: var(--accent);
-}
-
-.mode-tab.active .mode-tab-desc {
-  color: var(--accent);
-  opacity: 0.8;
 }
 
 /* ===== Mode Forms ===== */

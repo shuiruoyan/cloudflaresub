@@ -540,7 +540,7 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
-  if (event.target.closest('[data-close-modal="true"]')) {
+  if (event.target.closest('#qrModal [data-close-modal="true"]')) {
     closeQrDialog();
   }
 
@@ -930,6 +930,7 @@ function setupThemeSelector() {
   document.querySelectorAll('.theme-family-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       setThemeFamily(btn.dataset.family);
+      hideDropdown();
     });
   });
 
