@@ -219,11 +219,12 @@ function populateUrls(fixedId) {
   }
 }
 
-function renderPreviewRows(preview) {
+function renderPreviewRows(preview, startIndex = 1) {
   return preview
     .map(
-      (item) => `
+      (item, idx) => `
         <tr>
+          <td class="col-index">${startIndex + idx}</td>
           <td class="col-check"><input type="checkbox" data-select-name="${escapeHtml(item.name)}" /></td>
           <td>${escapeHtml(item.name)}</td>
           <td>${escapeHtml(item.type)}</td>
@@ -256,12 +257,8 @@ function renderPagination() {
 
 function updateBatchDeleteButton() {
   const checked = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]:checked');
-  if (checked.length > 0) {
-    batchDeleteBtn.classList.remove('hidden');
-    batchDeleteBtn.textContent = `批量删除 (${checked.length})`;
-  } else {
-    batchDeleteBtn.classList.add('hidden');
-  }
+  batchDeleteBtn.textContent = checked.length > 0 ? `批量删除 (${checked.length})` : '批量删除';
+  batchDeleteBtn.disabled = checked.length === 0;
 }
 
 function applyPreviewPage() {
@@ -269,7 +266,7 @@ function applyPreviewPage() {
   if (currentPage > totalPages) currentPage = totalPages || 1;
   const start = (currentPage - 1) * pageSize;
   const pageData = previewAllData.slice(start, start + pageSize);
-  previewBody.innerHTML = renderPreviewRows(pageData);
+  previewBody.innerHTML = renderPreviewRows(pageData, start + 1);
   selectAll.checked = false;
   renderPagination();
   updateBatchDeleteButton();

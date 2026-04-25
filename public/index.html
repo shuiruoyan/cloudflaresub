@@ -281,7 +281,7 @@ cf.example.com:443#US-Edge"
             <button id="resetExcludedBtn" type="button" class="secondary small hidden">重置排除</button>
           </div>
           <div class="preview-toolbar">
-            <button id="batchDeleteBtn" type="button" class="secondary small hidden">批量删除</button>
+            <button id="batchDeleteBtn" type="button" class="secondary small">批量删除</button>
             <div id="pagination" class="pagination hidden">
               <button type="button" id="prevPage" class="secondary small">上一页</button>
               <span id="pageInfo" class="page-info"></span>
@@ -301,6 +301,7 @@ cf.example.com:443#US-Edge"
             <table>
               <thead>
                 <tr>
+                  <th class="col-index">#</th>
                   <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
                   <th>名称</th>
                   <th>类型</th>
