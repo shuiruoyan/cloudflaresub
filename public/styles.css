@@ -446,6 +446,7 @@ input[readonly] {
   flex-wrap: wrap;
   margin-top: 8px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .actions button {

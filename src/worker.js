@@ -818,6 +818,9 @@ async function handleUpdateSubscription(request, env, url) {
       return json({ ok: false, error: '不支持的 mode，请使用 preferred 或 aggregate' }, 400);
     }
 
+    // Clear excluded list on every save
+    await env.SUB_STORE.delete('sub:excluded');
+
     // Get or create fixed ID
     let fixedId = await env.SUB_STORE.get('sub:fixed-id');
     let isNew = false;
