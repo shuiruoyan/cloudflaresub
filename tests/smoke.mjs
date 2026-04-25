@@ -116,24 +116,24 @@ assert.match(clashGrpc, /grpc-service-name:/);
 assert.match(clashGrpc, /authority:/);
 
 // Test Hysteria2 parsing with full params
-const hysteria2Uri = 'hysteria2://AMM2wPMO7l@xui2.songwh.top:19127?security=tls&fp=chrome&alpn=h3&ech=AGL%2BDQBeAAAgACAY93wNf3pOPKE%2BxZ9OwdPUo98kAPksXrwUgMvq2trNegAkAAEAAQABAAIAAQADAAIAAQACAAIAAgADAAMAAQADAAIAAwADAA94dWkyLnNvbmd3aC50b3AAAA%3D%3D&sni=xui2.songwh.top&obfs=salamander&obfs-password=7DyY9YXAqFL9hG-Vqb3i#%E6%96%B0%E5%8A%A0%E5%9D%A1-rabis-hy2-1';
+const hysteria2Uri = 'hysteria2://testpass123@hy2.example.com:8443?security=tls&fp=chrome&alpn=h3&ech=dGVzdC1lY2gta2V5LWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ%3D%3D&sni=hy2.example.com&obfs=salamander&obfs-password=test-obfs-pass#test-hy2-node';
 const { nodes: hy2Nodes, warnings: hy2Warnings } = parseNodeLinks(hysteria2Uri);
 assert.equal(hy2Nodes.length, 1, 'should parse 1 hysteria2 node');
 assert.equal(hy2Warnings.length, 0, 'should have no warnings');
 const hy2 = hy2Nodes[0];
 assert.equal(hy2.type, 'hysteria2');
-assert.equal(hy2.server, 'xui2.songwh.top');
-assert.equal(hy2.port, 19127);
-assert.equal(hy2.password, 'AMM2wPMO7l');
+assert.equal(hy2.server, 'hy2.example.com');
+assert.equal(hy2.port, 8443);
+assert.equal(hy2.password, 'testpass123');
 assert.equal(hy2.tls, true);
-assert.equal(hy2.sni, 'xui2.songwh.top');
+assert.equal(hy2.sni, 'hy2.example.com');
 assert.equal(hy2.fp, 'chrome');
 assert.deepEqual(hy2.alpn, ['h3']);
-assert.equal(hy2.ech, 'AGL+DQBeAAAgACAY93wNf3pOPKE+xZ9OwdPUo98kAPksXrwUgMvq2trNegAkAAEAAQABAAIAAQADAAIAAQACAAIAAgADAAMAAQADAAIAAwADAA94dWkyLnNvbmd3aC50b3AAAA==');
+assert.equal(hy2.ech, 'dGVzdC1lY2gta2V5LWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ==');
 assert.equal(hy2.obfs, 'salamander');
-assert.equal(hy2.obfsPassword, '7DyY9YXAqFL9hG-Vqb3i');
+assert.equal(hy2.obfsPassword, 'test-obfs-pass');
 assert.equal(hy2.allowInsecure, false);
-assert.equal(hy2.name, '新加坡-rabis-hy2-1');
+assert.equal(hy2.name, 'test-hy2-node');
 
 // Test SUPPORTED_PROTOCOLS includes hysteria2
 assert.ok(SUPPORTED_PROTOCOLS.includes('hysteria2'), 'SUPPORTED_PROTOCOLS should include hysteria2');
@@ -151,18 +151,18 @@ assert.equal(hy2Reparsed[0].sni, hy2.sni);
 // Test Hysteria2 Clash rendering
 const hy2Clash = renderClashSubscription([hy2]);
 assert.match(hy2Clash, /type: hysteria2/);
-assert.match(hy2Clash, /password: "AMM2wPMO7l"/);
+assert.match(hy2Clash, /password: "testpass123"/);
 assert.match(hy2Clash, /obfs: "salamander"/);
-assert.match(hy2Clash, /obfs-password: "7DyY9YXAqFL9hG-Vqb3i"/);
+assert.match(hy2Clash, /obfs-password: "test-obfs-pass"/);
 assert.match(hy2Clash, /fingerprint: "chrome"/);
 assert.doesNotMatch(hy2Clash, /network: tcp/, 'hysteria2 clash should not contain network: tcp');
-assert.match(hy2Clash, /sni: "xui2\.songwh\.top"/);
+assert.match(hy2Clash, /sni: "hy2\.example\.com"/);
 
 // Test Hysteria2 Surge rendering
 const hy2Surge = renderSurgeSubscription([hy2], 'https://sub.example.com/sub/demo?target=surge');
 assert.match(hy2Surge, /hysteria2/);
-assert.match(hy2Surge, /password=AMM2wPMO7l/);
-assert.match(hy2Surge, /sni=xui2\.songwh\.top/);
+assert.match(hy2Surge, /password=testpass123/);
+assert.match(hy2Surge, /sni=hy2\.example\.com/);
 
 // Test minimal Hysteria2 URI (defaults)
 const hy2Minimal = 'hysteria2://pass@example.com:443#minimal';
