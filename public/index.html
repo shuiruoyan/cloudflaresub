@@ -384,8 +384,24 @@ cf.example.com:443#US-Edge"
                     <input type="text" placeholder="搜索端口..." />
                   </div>
                 </th>
-                <th>Host</th>
-                <th>SNI</th>
+                <th>
+                  <div class="th-content">
+                    <span>Host</span>
+                    <svg class="th-filter-icon" data-filter="host" aria-label="过滤Host" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="th-filter-popover hidden" data-filter-popover="host">
+                    <input type="text" placeholder="搜索Host..." />
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span>SNI</span>
+                    <svg class="th-filter-icon" data-filter="sni" aria-label="过滤SNI" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="th-filter-popover hidden" data-filter-popover="sni">
+                    <input type="text" placeholder="搜索SNI..." />
+                  </div>
+                </th>
                 <th class="col-action">操作</th>
               </tr>
             </thead>

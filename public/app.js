@@ -185,6 +185,8 @@ const columnFilters = {
   type: '',
   server: '',
   port: '',
+  host: '',
+  sni: '',
 };
 let sortField = '';
 let sortOrder = '';
