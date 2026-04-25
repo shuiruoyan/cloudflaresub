@@ -100,7 +100,8 @@ async function apiFetch(path, opts = {}) {
 }
 
 async function apiAction({ path, method = 'POST', body, btn, loadingText = '保存中...', successText, onSuccess }) {
-  if (btn) { btn.disabled = true; btn.textContent = loadingText; }
+  const btnLabel = btn?.querySelector('.btn-label');
+  if (btn) { btn.disabled = true; if (btnLabel) btnLabel.textContent = loadingText; }
   try {
     const res = await apiFetch(path, {
       method,
@@ -116,7 +117,7 @@ async function apiAction({ path, method = 'POST', body, btn, loadingText = '保�
     showToast(err.message || '请求失败', 'error');
     throw err;
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '保存配置'; }
+    if (btn) { btn.disabled = false; const lbl = btn.querySelector('.btn-label'); if (lbl) lbl.textContent = '保存配置'; }
   }
 }
 
@@ -202,7 +203,8 @@ loginForm.addEventListener('submit', async (e) => {
   const errorBox = document.getElementById('loginError');
   errorBox.classList.add('hidden');
   loginBtn.disabled = true;
-  loginBtn.textContent = '验证中...';
+  const loginLabel = loginBtn.querySelector('.btn-text');
+  if (loginLabel) loginLabel.textContent = '验证中...';
 
   try {
     const res = await fetch('/api/login', {
@@ -224,7 +226,8 @@ loginForm.addEventListener('submit', async (e) => {
     errorBox.textContent = err.message;
     errorBox.classList.remove('hidden');
     loginBtn.disabled = false;
-    loginBtn.textContent = '登录';
+    const loginLabel2 = loginBtn.querySelector('.btn-text');
+    if (loginLabel2) loginLabel2.textContent = '建立连接';
   }
 });
 
@@ -286,7 +289,8 @@ function renderPagination(total) {
 
 function updateBatchDeleteButton() {
   const checked = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]:checked');
-  batchDeleteBtn.textContent = checked.length > 0 ? `批量删除 (${checked.length})` : '批量删除';
+  const label = batchDeleteBtn.querySelector('.btn-label');
+  if (label) label.textContent = checked.length > 0 ? `批量删除 (${checked.length})` : '批量删除';
   batchDeleteBtn.disabled = checked.length === 0;
 }
 
@@ -363,7 +367,8 @@ function showPreview(preview, excluded) {
   if (excluded) {
     excludedNames = new Set(excluded);
   }
-  resetExcludedBtn.textContent = excludedNames.size > 0 ? `重置排除 (${excludedNames.size})` : '重置排除';
+  const resetLabel = resetExcludedBtn.querySelector('.btn-label');
+  if (resetLabel) resetLabel.textContent = excludedNames.size > 0 ? `重置排除 (${excludedNames.size})` : '重置排除';
   resetExcludedBtn.disabled = excludedNames.size === 0;
 
   // Reset filters and sort on data refresh
@@ -498,10 +503,11 @@ document.addEventListener('click', async (event) => {
     showToast('链接已复制到剪贴板', 'success');
     const copyLive = document.getElementById('copyLive');
     if (copyLive) copyLive.textContent = '链接已复制到剪贴板';
-    const originalText = copyButton.textContent;
-    copyButton.textContent = '已复制';
+    const copyLabel = copyButton.querySelector('.btn-label');
+    const originalText = copyLabel ? copyLabel.textContent : '复制链接';
+    if (copyLabel) copyLabel.textContent = '已复制';
     setTimeout(() => {
-      copyButton.textContent = originalText;
+      if (copyLabel) copyLabel.textContent = originalText;
       if (copyLive) copyLive.textContent = '';
     }, 1200);
     return;
