@@ -1334,57 +1334,105 @@ button.warning:hover {
 }
 
 .th-filter-icon {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
+  padding: 5px;
+  margin: -5px;
   cursor: pointer;
   color: var(--muted);
   flex-shrink: 0;
-  transition: color 0.15s;
+  transition: color 0.2s, transform 0.2s, opacity 0.2s;
+  opacity: 0.5;
 }
 
 .th-filter-icon:hover {
   color: var(--text);
+  opacity: 1;
+  transform: scale(1.15);
 }
 
 .th-filter-icon.active {
   color: var(--accent);
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(0, 229, 160, 0.4));
+}
+
+.table-wrap th.has-filter {
+  border-bottom: 2px solid var(--accent);
 }
 
 .th-filter-popover {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   left: 0;
   z-index: 10;
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: 6px;
-  padding: 8px;
-  min-width: 140px;
-  box-shadow: var(--shadow);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 160px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform-origin: top left;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+
+.th-filter-popover.hidden {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.96);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.th-filter-popover::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--card);
+  border-left: 1px solid var(--card-border);
+  border-top: 1px solid var(--card-border);
+  transform: rotate(45deg);
 }
 
 .th-filter-popover input,
 .th-filter-popover select {
   width: 100%;
-  background: rgba(4, 6, 12, 0.6);
-  border: 1px solid var(--card-border);
-  border-radius: 4px;
-  padding: 5px 8px;
+  background: rgba(4, 6, 12, 0.8);
+  border: 1px solid rgba(0, 229, 160, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
   color: var(--text);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-family: inherit;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .th-filter-popover input:focus,
 .th-filter-popover select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 229, 160, 0.15);
+}
+
+.th-filter-popover input::placeholder {
+  color: var(--muted);
 }
 
 [data-theme="light"] .th-filter-popover input,
 [data-theme="light"] .th-filter-popover select {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   border-color: var(--card-border);
+}
+
+[data-theme="light"] .th-filter-popover::before {
+  background: var(--card);
 }
 
 .table-wrap tr:last-child td {

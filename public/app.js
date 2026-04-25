@@ -332,9 +332,12 @@ function showPreview(preview, excluded) {
   sortField = '';
   sortOrder = '';
   document.querySelectorAll('.th-filter-popover input, .th-filter-popover select').forEach((el) => { el.value = ''; });
-  document.querySelectorAll('.th-filter-icon').forEach((icon) => { icon.classList.remove('active'); });
+  document.querySelectorAll('.th-filter-icon').forEach((icon) => {
+    icon.classList.remove('active');
+    icon.setAttribute('aria-expanded', 'false');
+  });
   document.querySelectorAll('th.sortable').forEach((th) => {
-    th.classList.remove('sort-asc', 'sort-desc');
+    th.classList.remove('sort-asc', 'sort-desc', 'has-filter');
   });
 
   currentPage = 1;
@@ -573,11 +576,19 @@ document.addEventListener('click', async (event) => {
     const popover = document.querySelector(`.th-filter-popover[data-filter-popover="${field}"]`);
     if (popover) {
       const wasHidden = popover.classList.contains('hidden');
-      document.querySelectorAll('.th-filter-popover').forEach((el) => el.classList.add('hidden'));
+      document.querySelectorAll('.th-filter-popover').forEach((el) => {
+        el.classList.add('hidden');
+      });
+      document.querySelectorAll('.th-filter-icon').forEach((icon) => {
+        icon.setAttribute('aria-expanded', 'false');
+      });
       if (wasHidden) {
         popover.classList.remove('hidden');
+        filterIcon.setAttribute('aria-expanded', 'true');
         const input = popover.querySelector('input, select');
-        if (input) input.focus();
+        if (input) {
+          setTimeout(() => input.focus(), 50);
+        }
       }
     }
     return;
@@ -656,6 +667,14 @@ pageSizeSelect.addEventListener('change', () => {
   applyPreviewPage();
 });
 
+function updateFilterVisuals(field) {
+  const icon = document.querySelector(`.th-filter-icon[data-filter="${field}"]`);
+  const th = document.querySelector(`th[data-sort="${field}"]`);
+  const hasValue = Boolean(columnFilters[field]);
+  if (icon) icon.classList.toggle('active', hasValue);
+  if (th) th.classList.toggle('has-filter', hasValue);
+}
+
 // Column filter: popover input/select handlers (delegated)
 document.addEventListener('input', (event) => {
   const popover = event.target.closest('.th-filter-popover');
@@ -663,8 +682,7 @@ document.addEventListener('input', (event) => {
   const field = popover.dataset.filterPopover;
   if (!field) return;
   columnFilters[field] = event.target.value;
-  const icon = document.querySelector(`.th-filter-icon[data-filter="${field}"]`);
-  if (icon) icon.classList.toggle('active', Boolean(columnFilters[field]));
+  updateFilterVisuals(field);
   currentPage = 1;
   applyPreviewPage();
 });
@@ -675,18 +693,29 @@ document.addEventListener('change', (event) => {
   const field = popover.dataset.filterPopover;
   if (!field) return;
   columnFilters[field] = event.target.value;
-  const icon = document.querySelector(`.th-filter-icon[data-filter="${field}"]`);
-  if (icon) icon.classList.toggle('active', Boolean(columnFilters[field]));
+  updateFilterVisuals(field);
   currentPage = 1;
   applyPreviewPage();
 });
+
+function closeAllFilterPopovers() {
+  document.querySelectorAll('.th-filter-popover').forEach((el) => el.classList.add('hidden'));
+  document.querySelectorAll('.th-filter-icon').forEach((icon) => icon.setAttribute('aria-expanded', 'false'));
+}
 
 // Close filter popovers when clicking outside the table
 document.addEventListener('click', (event) => {
   if (event.target.closest('.th-filter-icon') || event.target.closest('.th-filter-popover')) {
     return;
   }
-  document.querySelectorAll('.th-filter-popover').forEach((el) => el.classList.add('hidden'));
+  closeAllFilterPopovers();
+});
+
+// Close popovers with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeAllFilterPopovers();
+  }
 });
 
 // Exclude / reset handlers
