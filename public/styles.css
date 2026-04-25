@@ -682,6 +682,15 @@ button {
   color: var(--accent-text);
   font-family: inherit;
   transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 button:hover {
@@ -1096,6 +1105,9 @@ button.warning:hover {
   color: var(--accent);
   transition: all 0.25s ease;
   font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .empty-cta:hover {
@@ -1309,6 +1321,9 @@ button.warning:hover {
   padding: 4px 8px;
   height: auto;
   line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .text-btn:hover {
@@ -1914,6 +1929,10 @@ button.warning:hover {
   overflow: hidden;
   transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
   margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .login-submit:hover {

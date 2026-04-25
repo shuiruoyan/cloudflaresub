@@ -64,6 +64,7 @@
               </div>
             </div>
             <button type="submit" id="loginBtn" class="login-submit">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
               <span class="btn-text">建立连接</span>
               <span class="btn-shine"></span>
             </button>
@@ -162,7 +163,7 @@
         </div>
 
         <div class="actions">
-          <button id="submitAggregateBtn" type="submit">保存配置</button>
+          <button id="submitAggregateBtn" type="submit"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>保存配置</button>
         </div>
       </form>
 
@@ -209,7 +210,7 @@ cf.example.com:443#US-Edge"
         </div>
 
         <div class="actions">
-          <button id="submitBtn" type="submit">保存配置</button>
+          <button id="submitBtn" type="submit"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>保存配置</button>
         </div>
       </form>
       </div>
@@ -232,7 +233,7 @@ cf.example.com:443#US-Edge"
           </div>
           <p class="empty-title">尚未生成订阅</p>
           <p class="empty-desc">选择模式并填写节点链接，点击"保存配置"后即可生成订阅。</p>
-          <button type="button" class="empty-cta" id="emptyStateCta">开始配置</button>
+          <button type="button" class="empty-cta" id="emptyStateCta"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>开始配置</button>
         </div>
 
         <div id="urlGenerator" class="url-generator hidden">
@@ -289,9 +290,9 @@ cf.example.com:443#US-Edge"
               <input id="activeUrl" readonly />
             </div>
             <div class="url-actions">
-              <button type="button" data-copy-target="activeUrl">复制链接</button>
-              <button type="button" class="secondary" data-qrcode-target="activeUrl">二维码</button>
-              <button id="rotateUrlBtn" type="button" class="secondary warning">更新订阅URL</button>
+              <button type="button" data-copy-target="activeUrl"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制链接</button>
+              <button type="button" class="secondary" data-qrcode-target="activeUrl"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>二维码</button>
+              <button id="rotateUrlBtn" type="button" class="secondary warning"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>更新订阅URL</button>
             </div>
             <p class="hint url-hint">Surge 格式当前支持 VMess / Trojan / Hysteria2 节点导出；VLESS 节点可能不兼容。</p>
           </div>
@@ -309,13 +310,13 @@ cf.example.com:443#US-Edge"
           </div>
           <div class="preview-toolbar">
             <div class="toolbar-left">
-              <button id="batchDeleteBtn" type="button" class="btn-danger small">批量删除</button>
-              <button id="resetExcludedBtn" type="button" class="secondary small">重置排除</button>
+              <button id="batchDeleteBtn" type="button" class="btn-danger small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>批量删除</button>
+              <button id="resetExcludedBtn" type="button" class="secondary small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>重置排除</button>
             </div>
             <div id="pagination" class="pagination hidden">
-              <button type="button" id="prevPage" class="text-btn">上一页</button>
+              <button type="button" id="prevPage" class="text-btn"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>上一页</button>
               <span id="pageInfo" class="page-info"></span>
-              <button type="button" id="nextPage" class="text-btn">下一页</button>
+              <button type="button" id="nextPage" class="text-btn">下一页<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
               <div class="page-size">
                 <label for="pageSizeSelect">每页</label>
                 <select id="pageSizeSelect">
@@ -410,7 +411,7 @@ cf.example.com:443#US-Edge"
             <p class="eyebrow">二维码导入</p>
             <h3 id="qrTitle">订阅二维码</h3>
           </div>
-          <button id="closeQrModal" type="button" class="secondary small">关闭</button>
+          <button id="closeQrModal" type="button" class="secondary small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>关闭</button>
         </div>
         <div class="modal-body">
           <div id="qrCanvas" class="qr-box"></div>
@@ -425,8 +426,8 @@ cf.example.com:443#US-Edge"
         <div class="modal-body">
           <p id="confirmMessage" class="confirm-message"></p>
           <div class="confirm-actions">
-            <button id="confirmCancel" type="button" class="secondary">取消</button>
-            <button id="confirmOk" type="button">确定</button>
+            <button id="confirmCancel" type="button" class="secondary"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>取消</button>
+            <button id="confirmOk" type="button"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>确定</button>
           </div>
         </div>
       </div>
