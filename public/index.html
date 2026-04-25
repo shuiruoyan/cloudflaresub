@@ -278,10 +278,12 @@ cf.example.com:443#US-Edge"
         <div id="previewSection" class="preview-wrap hidden">
           <div class="preview-head">
             <h3>节点预览</h3>
-            <button id="resetExcludedBtn" type="button" class="secondary small hidden">重置排除</button>
           </div>
           <div class="preview-toolbar">
-            <button id="batchDeleteBtn" type="button" class="secondary small">批量删除</button>
+            <div class="toolbar-left">
+              <button id="batchDeleteBtn" type="button" class="btn-danger small">批量删除</button>
+              <button id="resetExcludedBtn" type="button" class="secondary small">重置排除</button>
+            </div>
             <div id="pagination" class="pagination hidden">
               <button type="button" id="prevPage" class="secondary small">上一页</button>
               <span id="pageInfo" class="page-info"></span>

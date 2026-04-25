@@ -245,10 +245,6 @@ function renderPreviewRows(preview, startIndex = 1) {
 function renderPagination() {
   const total = previewAllData.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  if (totalPages <= 1) {
-    pagination.classList.add('hidden');
-    return;
-  }
   pagination.classList.remove('hidden');
   pageInfo.textContent = `${currentPage} / ${totalPages}`;
   prevPageBtn.disabled = currentPage <= 1;
@@ -291,11 +287,7 @@ function showPreview(preview, excluded) {
   if (excluded) {
     excludedNames = new Set(excluded);
   }
-  if (excludedNames.size > 0) {
-    resetExcludedBtn.classList.remove('hidden');
-  } else {
-    resetExcludedBtn.classList.add('hidden');
-  }
+  resetExcludedBtn.textContent = excludedNames.size > 0 ? `重置排除 (${excludedNames.size})` : '重置排除';
   currentPage = 1;
   if (previewAllData.length > 0) {
     applyPreviewPage();
@@ -304,7 +296,6 @@ function showPreview(preview, excluded) {
     previewBody.innerHTML = '';
     previewSection.classList.add('hidden');
     pagination.classList.add('hidden');
-    batchDeleteBtn.classList.add('hidden');
   }
 }
 

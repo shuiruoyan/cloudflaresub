@@ -1137,7 +1137,30 @@ button.warning:hover {
   cursor: pointer;
   width: 14px;
   height: 14px;
-  accent-color: var(--accent);
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid var(--muted);
+  border-radius: 3px;
+  background: transparent;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.col-check input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.col-check input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 3.5px;
+  top: 0.5px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
 }
 
 .col-action {
@@ -1168,6 +1191,29 @@ button.warning:hover {
 .btn-delete svg {
   width: 14px;
   height: 14px;
+}
+
+.btn-danger {
+  background: rgba(255, 85, 85, 0.12);
+  color: #ff5555;
+  border-color: rgba(255, 85, 85, 0.25);
+}
+
+.btn-danger::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 85, 85, 0.08), transparent);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 85, 85, 0.2);
+  color: #ff3333;
+  border-color: rgba(255, 85, 85, 0.4);
+  box-shadow: 0 0 20px rgba(255, 85, 85, 0.08);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pagination {
@@ -1274,9 +1320,12 @@ button.warning:hover {
 }
 
 .modal-dialog {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: min(92vw, 400px);
-  margin: 10vh auto 0;
+  margin: 0;
   padding: 24px;
   border-radius: 4px;
   background: #080c18;
@@ -1898,8 +1947,21 @@ button.warning:hover {
   background: rgba(0, 184, 122, 0.35);
 }
 
-[data-theme="light"] .col-check input[type="checkbox"] {
-  accent-color: #00b87a;
+[data-theme="light"] .col-check input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+[data-theme="light"] .btn-danger {
+  background: rgba(214, 69, 69, 0.1);
+  color: #d64545;
+  border-color: rgba(214, 69, 69, 0.2);
+}
+
+[data-theme="light"] .btn-danger:hover:not(:disabled) {
+  background: rgba(214, 69, 69, 0.18);
+  color: #c03939;
+  border-color: rgba(214, 69, 69, 0.35);
 }
 
 [data-theme="light"] textarea,
