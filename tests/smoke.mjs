@@ -154,8 +154,9 @@ assert.match(hy2Clash, /type: hysteria2/);
 assert.match(hy2Clash, /password: "AMM2wPMO7l"/);
 assert.match(hy2Clash, /obfs: "salamander"/);
 assert.match(hy2Clash, /obfs-password: "7DyY9YXAqFL9hG-Vqb3i"/);
-assert.match(hy2Clash, /client-fingerprint: "chrome"/);
-assert.match(hy2Clash, /servername: "xui2\.songwh\.top"/);
+assert.match(hy2Clash, /fingerprint: "chrome"/);
+assert.doesNotMatch(hy2Clash, /network: tcp/, 'hysteria2 clash should not contain network: tcp');
+assert.match(hy2Clash, /sni: "xui2\.songwh\.top"/);
 
 // Test Hysteria2 Surge rendering
 const hy2Surge = renderSurgeSubscription([hy2], 'https://sub.example.com/sub/demo?target=surge');

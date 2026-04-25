@@ -42,6 +42,21 @@ function escapeYaml(str = '') {
     .replace(/\n/g, ' ');
 }
 
+function safeDecodeUriComponent(str) {
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+}
+
+function formatHostForUrl(host) {
+  if (String(host).includes(':') && !String(host).startsWith('[')) {
+    return `[${host}]`;
+  }
+  return host;
+}
+
 function parsePreferredEndpoints(input) {
   return String(input || '')
     .split(/\r?\n/)
@@ -113,14 +128,21 @@ function parseUrlLike(link, type) {
 
 function parseHysteria2(link) {
   const u = new URL(link);
+  const password = safeDecodeUriComponent(u.username || '').trim();
+  const server = u.hostname;
+  const port = Number(u.port || 443);
+  if (!server || !password) {
+    throw new Error('Hysteria2 链接缺少 server 或 password');
+  }
   const security = (u.searchParams.get('security') || '').toLowerCase();
   const allowInsecureRaw = u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '';
   return {
     type: 'hysteria2',
-    name: decodeURIComponent(u.hash.replace(/^#/, '')) || 'hysteria2',
-    server: u.hostname,
-    port: Number(u.port || 443),
-    password: decodeURIComponent(u.username),
+    name: safeDecodeUriComponent(u.hash.replace(/^#/, '')) || 'hysteria2',
+    server,
+    originalServer: server,
+    port,
+    password,
     tls: security === 'tls',
     sni: u.searchParams.get('sni') || '',
     fp: u.searchParams.get('fp') || '',
@@ -261,7 +283,8 @@ function encodeTrojan(node) {
 }
 
 function encodeHysteria2(node) {
-  const url = new URL(`hysteria2://${encodeURIComponent(node.password)}@${node.server}:${node.port}`);
+  const host = formatHostForUrl(node.server);
+  const url = new URL(`hysteria2://${encodeURIComponent(node.password)}@${host}:${node.port}`);
   if (node.tls) url.searchParams.set('security', 'tls');
   if (node.sni) url.searchParams.set('sni', node.sni);
   if (node.fp) url.searchParams.set('fp', node.fp);
@@ -439,8 +462,9 @@ function renderClash(nodes) {
           lines.push(`    tls: true`);
         }
 
-        if (node.sni) {
-          lines.push(`    sni: "${escapeYaml(node.sni)}"`);
+        const effectiveSni = node.sni || node.originalServer || '';
+        if (effectiveSni) {
+          lines.push(`    sni: "${escapeYaml(effectiveSni)}"`);
         }
 
         if (node.alpn) {
@@ -527,7 +551,8 @@ function renderSurge(nodes, baseUrl, accessToken) {
       }
       // hysteria2
       const params = [`password=${node.password}`, `skip-cert-verify=${node.allowInsecure ? 'true' : 'false'}`];
-      if (node.sni) params.push(`sni=${node.sni}`);
+      const effectiveSni = node.sni || node.originalServer || '';
+      if (effectiveSni) params.push(`sni=${effectiveSni}`);
       if (node.obfs) params.push(`obfs=${node.obfs}`);
       if (node.obfsPassword) params.push(`obfs-password=${node.obfsPassword}`);
       if (node.fp) params.push(`fingerprint=${node.fp}`);

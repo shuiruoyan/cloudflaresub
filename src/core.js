@@ -91,7 +91,7 @@ export function parseNodeLinks(inputText) {
     .filter(Boolean);
 
   if (!lines.length) {
-    throw new Error('请至少粘贴 1 个 vmess:// / vless:// / trojan:// 节点链接。');
+    throw new Error('请至少粘贴 1 个 vmess:// / vless:// / trojan:// / hysteria2:// 节点链接。');
   }
 
   const nodes = [];
@@ -200,7 +200,7 @@ export function summarizeNodes(nodes, limit = 20) {
     port: node.port,
     host: node.hostHeader || '',
     sni: node.sni || '',
-    network: node.network || 'tcp',
+    network: node.type === 'hysteria2' ? 'quic' : (node.network || 'tcp'),
     tls: Boolean(node.tls),
   }));
 }
@@ -247,7 +247,7 @@ export function renderRawSubscription(nodes) {
 export function renderClashSubscription(nodes) {
   const supportedNodes = nodes.filter(isClashSupportedNode);
   if (!supportedNodes.length) {
-    throw new Error('没有可导出为 Clash 的节点。当前版本主要支持 VMess/VLESS/Trojan 的 WS/TCP/GRPC/HTTP 常见格式。');
+    throw new Error('没有可导出为 Clash 的节点。当前版本主要支持 VMess/VLESS/Trojan/Hysteria2 的 WS/TCP/GRPC/HTTP 常见格式。');
   }
 
   const proxyNames = supportedNodes.map((node) => node.name);
@@ -667,13 +667,24 @@ function renderClashProxy(node) {
     lines.push('    tls: true');
     const servername = getEffectiveTlsHost(node);
     if (servername) {
-      lines.push(`    servername: ${yamlQuote(servername)}`);
+      if (node.type === 'hysteria2') {
+        lines.push(`    sni: ${yamlQuote(servername)}`);
+      } else {
+        lines.push(`    servername: ${yamlQuote(servername)}`);
+      }
     }
     if (node.alpn?.length) {
-      lines.push(`    alpn: [${node.alpn.map(yamlQuote).join(', ')}]`);
+      lines.push(`    alpn:`);
+      node.alpn.forEach((a) => {
+        lines.push(`      - ${yamlQuote(a)}`);
+      });
     }
     if (node.fp) {
-      lines.push(`    client-fingerprint: ${yamlQuote(node.fp)}`);
+      if (node.type === 'hysteria2') {
+        lines.push(`    fingerprint: ${yamlQuote(node.fp)}`);
+      } else {
+        lines.push(`    client-fingerprint: ${yamlQuote(node.fp)}`);
+      }
     }
     lines.push(`    skip-cert-verify: ${node.allowInsecure ? 'true' : 'false'}`);
   }
@@ -690,7 +701,9 @@ function renderClashProxy(node) {
     }
   }
 
-  lines.push(`    network: ${node.network || 'tcp'}`);
+  if (node.type !== 'hysteria2') {
+    lines.push(`    network: ${node.network || 'tcp'}`);
+  }
 
   if (node.network === 'ws') {
     lines.push('    ws-opts:');
