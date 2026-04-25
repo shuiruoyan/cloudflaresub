@@ -395,6 +395,10 @@ input[readonly] {
   font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
+#namePrefix {
+  padding: 10px 14px;
+}
+
 .hint {
   color: var(--muted);
   font-size: 0.8rem;
