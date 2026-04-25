@@ -2,7 +2,7 @@
   <img src="./public/icons/auto.svg" alt="CloudflareSub Logo" height="40" align="absmiddle" /> CloudflareSub
 </h1>
 
-<p align="center"><em>一个轻量化的优选IP订阅器</em></p>
+<p align="center"><em>一个轻量化的代理节点订阅管理器</em></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="License MIT" />
@@ -12,15 +12,19 @@
 
 ## 功能特性
 
-- 支持 `vmess`、`vless`、`trojan` 节点解析
-- 支持 Base64 订阅文本自动展开
-- 支持 `host[:port][#remark]` 格式的优选地址
-- 固定订阅 URL：一次配置，永久使用 `/sub/:id`
-- 登录鉴权：`AUTHOR_NAME` + `ADMIN_PASSWORD` 管理后台
-- 订阅保护：`SUB_ACCESS_TOKEN` 防止订阅链接被滥用
-- 支持导出：Raw（Base64）/ Clash（YAML）/ Surge（文本）/ Shadowrocket
-- 数据持久化：Workers KV 存储，配置不丢失
-- 订阅 URL 支持手动轮换（旧链接立即失效）
+- **双模式订阅**
+  - **聚合模式**：直接聚合 vmess / vless / trojan / hysteria2 节点，输出多格式订阅
+  - **优选 IP 模式**：将自建节点批量替换为优选 IP / 优选域名，生成组合节点
+- **多协议支持**：`vmess`、`vless`、`trojan`、`hysteria2`，支持 VLESS Reality + xhttp 扩展参数
+- **Base64 订阅文本自动展开**：直接粘贴原始订阅内容即可解析
+- **固定订阅 URL**：`/sub/:id` 格式，一次配置永久使用
+- **节点管理**：节点预览表格支持过滤、排序、分页，支持批量删除与重置排除
+- **多格式导出**：Raw（Base64）/ Clash（YAML）/ Surge（文本）/ Shadowrocket
+- **登录鉴权**：`AUTHOR_NAME` + `ADMIN_PASSWORD` 保护管理后台
+- **订阅保护**：`SUB_ACCESS_TOKEN` 防止订阅链接被滥用
+- **URL 轮换**：手动更新订阅 ID，旧链接立即失效
+- **数据持久化**：Workers KV 存储，配置不丢失
+- **精致主题**：4 种色系（赤陶橘 / 鼠尾草绿 / 烟灰玫瑰 / 深青灰）× 深色/浅色双模式
 
 ## 项目结构
 
@@ -88,7 +92,8 @@ npx wrangler deploy
 
 - 打开 Worker 域名
 - 使用配置的 `AUTHOR_NAME` 和 `ADMIN_PASSWORD` 登录
-- 输入节点链接和优选 IP，点击"保存配置"
+- 选择聚合模式或优选 IP 模式，输入节点链接
+- 点击"保存配置"生成订阅
 - 在各客户端中导入对应的订阅链接
 
 ## API 说明
@@ -122,19 +127,23 @@ npx wrangler deploy
 {
   "ok": true,
   "exists": true,
-  "config": {
+  "preferred": {
     "nodeLinks": "...",
     "preferredIps": "...",
     "namePrefix": "CF",
     "keepOriginalHost": true
   },
+  "aggregate": {
+    "nodeLinks": "..."
+  },
   "fixedId": "AbC123xYz9",
   "counts": {
-    "inputNodes": 3,
-    "preferredEndpoints": 5,
-    "outputNodes": 15
+    "preferredNodes": 3,
+    "aggregateNodes": 5,
+    "totalNodes": 15
   },
-  "preview": [...]
+  "preview": [...],
+  "excluded": [...]
 }
 ```
 
@@ -142,13 +151,22 @@ npx wrangler deploy
 
 保存或更新订阅配置。
 
-请求体：
+请求体（优选 IP 模式）：
 ```json
 {
+  "mode": "preferred",
   "nodeLinks": "vmess://...\nvless://...",
   "preferredIps": "104.16.1.2#HK\n104.17.2.3:2053#US",
   "namePrefix": "CF",
   "keepOriginalHost": true
+}
+```
+
+请求体（聚合模式）：
+```json
+{
+  "mode": "aggregate",
+  "nodeLinks": "vmess://...\nvless://..."
 }
 ```
 
@@ -158,14 +176,9 @@ npx wrangler deploy
   "ok": true,
   "isNew": false,
   "fixedId": "AbC123xYz9",
-  "urls": {
-    "auto": "https://<worker>/sub/AbC123xYz9?token=...",
-    "raw": "https://<worker>/sub/AbC123xYz9?target=raw&token=...",
-    "clash": "https://<worker>/sub/AbC123xYz9?target=clash&token=...",
-    "surge": "https://<worker>/sub/AbC123xYz9?target=surge&token=..."
-  },
   "counts": { ... },
-  "preview": [...]
+  "preview": [...],
+  "excluded": [...]
 }
 ```
 
@@ -177,10 +190,31 @@ npx wrangler deploy
 ```json
 {
   "ok": true,
-  "fixedId": "newIdHere",
-  "urls": { ... }
+  "fixedId": "newIdHere"
 }
 ```
+
+### `POST /api/exclude-node`
+
+排除单个节点。
+
+请求体：
+```json
+{ "name": "节点名称" }
+```
+
+### `POST /api/exclude-nodes`
+
+批量排除节点。
+
+请求体：
+```json
+{ "names": ["节点1", "节点2"] }
+```
+
+### `POST /api/reset-excluded`
+
+重置排除列表，恢复所有被排除的节点。
 
 ### `GET /sub/:id`
 
@@ -194,25 +228,28 @@ npx wrangler deploy
 curl "https://<worker>/sub/AbC123xYz9?target=clash&token=<SUB_ACCESS_TOKEN>"
 ```
 
-## 前端页面
+## 前端管理后台
 
-根路径 `/` 提供网页管理后台：
-- **登录界面**：网络节点控制台风格，需 AUTHOR_NAME + ADMIN_PASSWORD
-- **配置表单**：粘贴节点链接、优选 IP、设置备注前缀
-- **选项卡切换**：自动 / V2rayN / Clash / 小火箭 / Surge 五种格式
+根路径 `/` 提供网页管理后台，采用编辑杂志风格设计：
+
+- **登录界面**：简洁的节点控制台风格，需 AUTHOR_NAME + ADMIN_PASSWORD
+- **模式切换**：聚合模式 / 优选 IP 模式，药丸式 Tab 切换
+- **配置表单**：粘贴节点链接、优选 IP、设置备注前缀、保留原 Host/SNI 选项
+- **主题系统**：4 种色系（赤陶橘 / 鼠尾草绿 / 烟灰玫瑰 / 深青灰）× 深色/浅色双模式
+- **客户端选项卡**：自动 / V2rayN / Clash / 小火箭 / Surge 五种格式，一键切换
 - **订阅链接终端**：一键复制、二维码扫描导入
-- **节点预览**：生成结果前 20 个节点预览表
-- **统计面板**：原始节点数、优选地址数、生成节点数
-- **Toast 通知**：操作成功/失败/警告横幅提示
+- **统计面板**：原始节点数、聚合节点数、总计节点数
+- **节点预览表格**：完整节点列表，支持列过滤、列排序、分页浏览、批量删除、重置排除
+- **操作反馈**：Toast 通知（成功/失败/警告）、确认对话框
 - **URL 轮换**：手动更新订阅 ID，旧链接立即失效
 
 ## 注意事项
 
-- 每条订阅记录默认保存 7 天（TTL），固定 ID 持久保存
-- Surge 导出当前仅包含 `vmess` / `trojan` 节点
-- VLESS 节点在 Surge 中可能不兼容
+- 优选 IP 模式下，系统不会帮你寻找优选 IP，只负责将节点地址替换为你提供的 IP/域名
+- Surge 导出当前仅包含 `vmess` / `trojan` / `hysteria2` 节点；`vless` 节点在 Surge 中可能不兼容
 - 推荐勾选"保留原 Host / SNI"，更适合 Cloudflare CDN 场景
 - 订阅链接包含敏感信息，请勿公开分享
+- 部署前务必配置 `ADMIN_PASSWORD` 和 `SUB_ACCESS_TOKEN`，防止未授权访问
 
 ## License
 
