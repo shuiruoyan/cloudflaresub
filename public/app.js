@@ -826,6 +826,17 @@ clientTabs.forEach((tab) => {
 });
 
 // Mode tab switching
+function updateModeIndicator() {
+  const indicator = document.querySelector('.mode-tab-indicator');
+  const activeTab = document.querySelector('.mode-tab.active');
+  if (!indicator || !activeTab) return;
+  const parent = activeTab.parentElement;
+  const parentRect = parent.getBoundingClientRect();
+  const tabRect = activeTab.getBoundingClientRect();
+  indicator.style.left = `${tabRect.left - parentRect.left + parent.scrollLeft}px`;
+  indicator.style.width = `${tabRect.width}px`;
+}
+
 function setActiveMode(mode) {
   modeTabs.forEach((t) => t.classList.remove('active'));
   modeForms.forEach((f) => f.classList.remove('active'));
@@ -833,6 +844,7 @@ function setActiveMode(mode) {
   const targetForm = document.getElementById(`generator-form-${mode}`);
   if (targetTab) targetTab.classList.add('active');
   if (targetForm) targetForm.classList.add('active');
+  updateModeIndicator();
 }
 
 modeTabs.forEach((tab) => {
@@ -851,6 +863,10 @@ function restoreActiveMode() {
     setActiveMode('aggregate');
   }
 }
+
+window.addEventListener('resize', () => {
+  requestAnimationFrame(updateModeIndicator);
+});
 
 // Theme toggle
 function initTheme() {

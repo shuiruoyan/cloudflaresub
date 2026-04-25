@@ -105,18 +105,27 @@
         </div>
       </section>
 
-      <div class="mode-tabs">
-        <button type="button" class="mode-tab active" data-mode="aggregate">
-          <span class="mode-tab-name">聚合模式</span>
-          <span class="mode-tab-desc">节点链接直接聚合</span>
-        </button>
-        <button type="button" class="mode-tab" data-mode="preferred">
-          <span class="mode-tab-name">优选 IP 模式</span>
-          <span class="mode-tab-desc">节点 + 优选 IP 组合生成</span>
-        </button>
-      </div>
+      <div class="mode-panel card">
+        <div class="mode-tabs">
+          <button type="button" class="mode-tab active" data-mode="aggregate">
+            <span class="mode-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </span>
+            <span class="mode-tab-name">聚合模式</span>
+            <span class="mode-tab-desc">节点链接直接聚合</span>
+          </button>
+          <button type="button" class="mode-tab" data-mode="preferred">
+            <span class="mode-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </span>
+            <span class="mode-tab-name">优选 IP 模式</span>
+            <span class="mode-tab-desc">节点 + 优选 IP 组合生成</span>
+          </button>
+          <div class="mode-tab-indicator"></div>
+        </div>
 
-      <form id="generator-form-aggregate" class="card stack-lg mode-form active">
+        <div class="mode-forms">
+          <form id="generator-form-aggregate" class="stack-lg mode-form active">
         <div>
           <label for="aggregateNodeLinks">节点链接</label>
           <textarea
@@ -133,7 +142,7 @@
         </div>
       </form>
 
-      <form id="generator-form-preferred" class="card stack-lg mode-form">
+      <form id="generator-form-preferred" class="stack-lg mode-form">
         <div class="form-grid">
           <div>
             <label for="nodeLinks">节点链接</label>
@@ -179,6 +188,8 @@ cf.example.com:443#US-Edge"
           <button id="submitBtn" type="submit">保存配置</button>
         </div>
       </form>
+      </div>
+      </div>
 
       <section id="resultSection" class="card stack-lg">
         <div class="section-head result-head">
