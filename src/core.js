@@ -282,9 +282,9 @@ export function renderClashSubscription(nodes) {
 }
 
 export function renderSurgeSubscription(nodes, requestUrl) {
-  const supportedNodes = nodes.filter((node) => node.type === 'vmess' || node.type === 'trojan');
+  const supportedNodes = nodes.filter((node) => node.type === 'vmess' || node.type === 'trojan' || node.type === 'hysteria2');
   if (!supportedNodes.length) {
-    throw new Error('当前 Surge 导出仅支持 VMess / Trojan 节点。你的示例 VMess 节点可以正常使用该导出。');
+    throw new Error('当前 Surge 导出仅支持 VMess / Trojan / Hysteria2 节点。');
   }
 
   const proxyNames = supportedNodes.map((node) => sanitizeSurgeName(node.name));

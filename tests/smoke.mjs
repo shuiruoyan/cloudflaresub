@@ -157,6 +157,12 @@ assert.match(hy2Clash, /obfs-password: "7DyY9YXAqFL9hG-Vqb3i"/);
 assert.match(hy2Clash, /client-fingerprint: "chrome"/);
 assert.match(hy2Clash, /servername: "xui2\.songwh\.top"/);
 
+// Test Hysteria2 Surge rendering
+const hy2Surge = renderSurgeSubscription([hy2], 'https://sub.example.com/sub/demo?target=surge');
+assert.match(hy2Surge, /hysteria2/);
+assert.match(hy2Surge, /password=AMM2wPMO7l/);
+assert.match(hy2Surge, /sni=xui2\.songwh\.top/);
+
 // Test minimal Hysteria2 URI (defaults)
 const hy2Minimal = 'hysteria2://pass@example.com:443#minimal';
 const { nodes: hy2MinNodes } = parseNodeLinks(hy2Minimal);
