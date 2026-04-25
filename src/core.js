@@ -639,6 +639,9 @@ function renderClashProxy(node) {
   if (node.network === 'grpc') {
     lines.push('    grpc-opts:');
     lines.push(`      grpc-service-name: ${yamlQuote(node.serviceName || '')}`);
+    if (node.authority) {
+      lines.push(`      authority: ${yamlQuote(node.authority)}`);
+    }
   }
 
   if (node.network === 'http' || node.network === 'h2') {
@@ -647,6 +650,17 @@ function renderClashProxy(node) {
     if (node.hostHeader) {
       lines.push('      headers:');
       lines.push(`        Host: [${yamlQuote(node.hostHeader)}]`);
+    }
+  }
+
+  if (node.network === 'xhttp' || node.network === 'splithttp') {
+    lines.push('    xhttp-opts:');
+    if (node.mode) lines.push(`      mode: ${yamlQuote(node.mode)}`);
+    if (node.extra) lines.push(`      extra: ${yamlQuote(node.extra)}`);
+    lines.push(`      path: ${yamlQuote(node.path || '/')}`);
+    if (node.hostHeader) {
+      lines.push('      headers:');
+      lines.push(`        Host: ${yamlQuote(node.hostHeader)}`);
     }
   }
 
