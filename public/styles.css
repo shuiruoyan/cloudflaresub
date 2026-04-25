@@ -1307,13 +1307,12 @@ button.warning:hover {
 
 .table-wrap {
   overflow-x: auto;
-  overflow-y: auto;
-  max-height: 560px;
   border-radius: 4px;
   border: 1px solid var(--card-border);
 }
 
-.table-wrap table {
+.table-head-wrap table,
+.table-body-scroll table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
@@ -1321,17 +1320,20 @@ button.warning:hover {
   font-size: 0.84rem;
 }
 
-.table-wrap th,
-.table-wrap td {
+.table-head-wrap th,
+.table-body-scroll td {
   padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid rgba(0, 229, 160, 0.05);
 }
 
-.table-wrap thead tr {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+.table-body-scroll {
+  overflow-y: auto;
+  max-height: 480px;
+}
+
+.table-head-wrap th {
+  border-bottom: 1px solid rgba(0, 229, 160, 0.05);
 }
 
 .table-wrap th {
@@ -1523,10 +1525,31 @@ button.warning:hover {
   position: fixed;
   inset: 0;
   z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.25s ease;
 }
 
 .modal.hidden {
   display: none;
+  opacity: 0;
+}
+
+.modal:not(.hidden) .modal-backdrop {
+  animation: modalFadeIn 0.25s ease;
+}
+
+.modal:not(.hidden) .modal-dialog {
+  animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .modal-backdrop {

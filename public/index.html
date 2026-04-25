@@ -106,17 +106,34 @@
       </section>
 
       <div class="mode-tabs">
-        <button type="button" class="mode-tab active" data-mode="preferred">
-          <span class="mode-tab-name">优选 IP 模式</span>
-          <span class="mode-tab-desc">节点 + 优选 IP 组合生成</span>
-        </button>
-        <button type="button" class="mode-tab" data-mode="aggregate">
+        <button type="button" class="mode-tab active" data-mode="aggregate">
           <span class="mode-tab-name">聚合模式</span>
           <span class="mode-tab-desc">节点链接直接聚合</span>
         </button>
+        <button type="button" class="mode-tab" data-mode="preferred">
+          <span class="mode-tab-name">优选 IP 模式</span>
+          <span class="mode-tab-desc">节点 + 优选 IP 组合生成</span>
+        </button>
       </div>
 
-      <form id="generator-form-preferred" class="card stack-lg mode-form active">
+      <form id="generator-form-aggregate" class="card stack-lg mode-form active">
+        <div>
+          <label for="aggregateNodeLinks">节点链接</label>
+          <textarea
+            id="aggregateNodeLinks"
+            name="nodeLinks"
+            rows="14"
+            placeholder="支持 vmess://、vless://、trojan://、hysteria2://，一行一个。也支持直接粘贴原始 base64 订阅内容。"
+          ></textarea>
+          <p class="hint">支持 vmess / vless / trojan / hysteria2，一行一个。兼容自建 WS + TLS 写法，也支持粘贴 base64 订阅。节点将原样聚合，名称自动追加「| 聚合」后缀。</p>
+        </div>
+
+        <div class="actions">
+          <button id="submitAggregateBtn" type="submit">保存配置</button>
+        </div>
+      </form>
+
+      <form id="generator-form-preferred" class="card stack-lg mode-form">
         <div class="form-grid">
           <div>
             <label for="nodeLinks">节点链接</label>
@@ -160,23 +177,6 @@ cf.example.com:443#US-Edge"
 
         <div class="actions">
           <button id="submitBtn" type="submit">保存配置</button>
-        </div>
-      </form>
-
-      <form id="generator-form-aggregate" class="card stack-lg mode-form">
-        <div>
-          <label for="aggregateNodeLinks">节点链接</label>
-          <textarea
-            id="aggregateNodeLinks"
-            name="nodeLinks"
-            rows="14"
-            placeholder="支持 vmess://、vless://、trojan://、hysteria2://，一行一个。也支持直接粘贴原始 base64 订阅内容。"
-          ></textarea>
-          <p class="hint">支持 vmess / vless / trojan / hysteria2，一行一个。兼容自建 WS + TLS 写法，也支持粘贴 base64 订阅。节点将原样聚合，名称自动追加「| 聚合」后缀。</p>
-        </div>
-
-        <div class="actions">
-          <button id="submitAggregateBtn" type="submit">保存配置</button>
         </div>
       </form>
 
@@ -293,75 +293,92 @@ cf.example.com:443#US-Edge"
             </div>
           </div>
           <div class="table-wrap">
-            <table>
-              <colgroup>
-                <col class="col-check" />
-                <col class="col-index" />
-                <col class="col-name" />
-                <col class="col-type" />
-                <col class="col-server" />
-                <col class="col-port" />
-                <col class="col-host" />
-                <col class="col-sni" />
-                <col class="col-action" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
-                  <th class="col-index">#</th>
-                  <th class="sortable" data-sort="name">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>名称</span>
-                      <svg class="th-filter-icon" data-filter="name" aria-label="过滤名称" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="name">
-                      <input type="text" placeholder="搜索名称..." />
-                    </div>
-                  </th>
-                  <th class="sortable" data-sort="type">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>类型</span>
-                      <svg class="th-filter-icon" data-filter="type" aria-label="过滤类型" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="type">
-                      <select>
-                        <option value="">全部</option>
-                        <option value="vmess">vmess</option>
-                        <option value="vless">vless</option>
-                        <option value="trojan">trojan</option>
-                        <option value="hysteria2">hysteria2</option>
-                      </select>
-                    </div>
-                  </th>
-                  <th class="sortable" data-sort="server">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>服务器</span>
-                      <svg class="th-filter-icon" data-filter="server" aria-label="过滤服务器" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="server">
-                      <input type="text" placeholder="搜索服务器..." />
-                    </div>
-                  </th>
-                  <th class="sortable" data-sort="port">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>端口</span>
-                      <svg class="th-filter-icon" data-filter="port" aria-label="过滤端口" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="port">
-                      <input type="text" placeholder="搜索端口..." />
-                    </div>
-                  </th>
-                  <th>Host</th>
-                  <th>SNI</th>
-                  <th class="col-action">操作</th>
-                </tr>
-              </thead>
-              <tbody id="previewBody"></tbody>
-            </table>
+            <div class="table-head-wrap">
+              <table>
+                <colgroup>
+                  <col class="col-check" />
+                  <col class="col-index" />
+                  <col class="col-name" />
+                  <col class="col-type" />
+                  <col class="col-server" />
+                  <col class="col-port" />
+                  <col class="col-host" />
+                  <col class="col-sni" />
+                  <col class="col-action" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
+                    <th class="col-index">#</th>
+                    <th class="sortable" data-sort="name">
+                      <div class="th-content">
+                        <span class="sort-indicator"></span>
+                        <span>名称</span>
+                        <svg class="th-filter-icon" data-filter="name" aria-label="过滤名称" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                      </div>
+                      <div class="th-filter-popover hidden" data-filter-popover="name">
+                        <input type="text" placeholder="搜索名称..." />
+                      </div>
+                    </th>
+                    <th class="sortable" data-sort="type">
+                      <div class="th-content">
+                        <span class="sort-indicator"></span>
+                        <span>类型</span>
+                        <svg class="th-filter-icon" data-filter="type" aria-label="过滤类型" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                      </div>
+                      <div class="th-filter-popover hidden" data-filter-popover="type">
+                        <select>
+                          <option value="">全部</option>
+                          <option value="vmess">vmess</option>
+                          <option value="vless">vless</option>
+                          <option value="trojan">trojan</option>
+                          <option value="hysteria2">hysteria2</option>
+                        </select>
+                      </div>
+                    </th>
+                    <th class="sortable" data-sort="server">
+                      <div class="th-content">
+                        <span class="sort-indicator"></span>
+                        <span>服务器</span>
+                        <svg class="th-filter-icon" data-filter="server" aria-label="过滤服务器" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                      </div>
+                      <div class="th-filter-popover hidden" data-filter-popover="server">
+                        <input type="text" placeholder="搜索服务器..." />
+                      </div>
+                    </th>
+                    <th class="sortable" data-sort="port">
+                      <div class="th-content">
+                        <span class="sort-indicator"></span>
+                        <span>端口</span>
+                        <svg class="th-filter-icon" data-filter="port" aria-label="过滤端口" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                      </div>
+                      <div class="th-filter-popover hidden" data-filter-popover="port">
+                        <input type="text" placeholder="搜索端口..." />
+                      </div>
+                    </th>
+                    <th>Host</th>
+                    <th>SNI</th>
+                    <th class="col-action">操作</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div class="table-body-scroll">
+              <table>
+                <colgroup>
+                  <col class="col-check" />
+                  <col class="col-index" />
+                  <col class="col-name" />
+                  <col class="col-type" />
+                  <col class="col-server" />
+                  <col class="col-port" />
+                  <col class="col-host" />
+                  <col class="col-sni" />
+                  <col class="col-action" />
+                </colgroup>
+                <tbody id="previewBody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

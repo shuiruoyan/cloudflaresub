@@ -346,6 +346,7 @@ function showPreview(preview, excluded) {
     excludedNames = new Set(excluded);
   }
   resetExcludedBtn.textContent = excludedNames.size > 0 ? `重置排除 (${excludedNames.size})` : '重置排除';
+  resetExcludedBtn.disabled = excludedNames.size === 0;
 
   // Reset filters and sort on data refresh
   Object.keys(columnFilters).forEach((k) => { columnFilters[k] = ''; });
@@ -846,6 +847,8 @@ function restoreActiveMode() {
   const saved = localStorage.getItem('activeMode');
   if (saved === 'preferred' || saved === 'aggregate') {
     setActiveMode(saved);
+  } else {
+    setActiveMode('aggregate');
   }
 }
 
