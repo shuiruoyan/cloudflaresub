@@ -92,34 +92,33 @@
         </div>
         <div class="hero-side">
           <div class="hero-controls">
-              <div class="theme-selector">
-                <button id="themeSelectorTrigger" type="button" class="theme-selector-trigger" aria-haspopup="true" aria-expanded="false">
-                  <span class="theme-current-swatch"></span>
-                  <span class="theme-current-name">深青灰</span>
-                  <svg class="theme-selector-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <div id="themeSelectorDropdown" class="theme-selector-dropdown hidden">
-                  <div class="theme-selector-families">
-                    <button type="button" class="theme-family-btn" data-family="terracotta">
-                      <span class="theme-family-swatch" style="background:#c4785a"></span>赤陶橘
-                    </button>
-                    <button type="button" class="theme-family-btn" data-family="sage">
-                      <span class="theme-family-swatch" style="background:#7daa7d"></span>鼠尾草
-                    </button>
-                    <button type="button" class="theme-family-btn" data-family="rose">
-                      <span class="theme-family-swatch" style="background:#c97a7a"></span>烟灰玫瑰
-                    </button>
-                    <button type="button" class="theme-family-btn" data-family="teal">
-                      <span class="theme-family-swatch" style="background:#5a9e9e"></span>深青灰
-                    </button>
-                  </div>
-                  <div class="theme-selector-divider"></div>
-                  <div class="theme-selector-modes">
-                    <button type="button" class="theme-mode-btn" data-mode="dark">深色</button>
-                    <button type="button" class="theme-mode-btn" data-mode="light">浅色</button>
-                  </div>
+            <button id="themeModeToggle" type="button" class="theme-mode-toggle" aria-label="切换明暗主题">
+              <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <div class="theme-selector">
+              <button id="themeSelectorTrigger" type="button" class="theme-selector-trigger" aria-haspopup="true" aria-expanded="false">
+                <span class="theme-current-swatch"></span>
+                <span class="theme-current-name">深青灰</span>
+                <svg class="theme-selector-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div id="themeSelectorDropdown" class="theme-selector-dropdown hidden">
+                <div class="theme-selector-families">
+                  <button type="button" class="theme-family-btn" data-family="terracotta">
+                    <span class="theme-family-swatch" style="background:#c4785a"></span>赤陶橘
+                  </button>
+                  <button type="button" class="theme-family-btn" data-family="sage">
+                    <span class="theme-family-swatch" style="background:#7daa7d"></span>鼠尾草
+                  </button>
+                  <button type="button" class="theme-family-btn" data-family="rose">
+                    <span class="theme-family-swatch" style="background:#c97a7a"></span>烟灰玫瑰
+                  </button>
+                  <button type="button" class="theme-family-btn" data-family="teal">
+                    <span class="theme-family-swatch" style="background:#5a9e9e"></span>深青灰
+                  </button>
                 </div>
               </div>
+            </div>
             <button id="logoutBtn" type="button" class="logout-btn" aria-label="退出登录">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

@@ -259,6 +259,57 @@ h1, h2, h3, .eyebrow {
   align-items: center;
 }
 
+/* ===== Theme Mode Toggle ===== */
+.theme-mode-toggle {
+  appearance: none;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.theme-mode-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.theme-mode-toggle .icon-sun,
+.theme-mode-toggle .icon-moon {
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.theme-mode-toggle .icon-sun {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.theme-mode-toggle .icon-moon {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.theme-mode-toggle.light .icon-sun {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.theme-mode-toggle.light .icon-moon {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* ===== Logout Button ===== */
 .logout-btn {
   appearance: none;
@@ -290,6 +341,7 @@ h1, h2, h3, .eyebrow {
 /* ===== Theme Selector ===== */
 .theme-selector {
   position: relative;
+  z-index: 10;
 }
 
 .theme-selector-trigger {
