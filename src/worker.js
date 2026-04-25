@@ -260,12 +260,27 @@ function encodeTrojan(node) {
   return url.toString();
 }
 
+function encodeHysteria2(node) {
+  const url = new URL(`hysteria2://${encodeURIComponent(node.password)}@${node.server}:${node.port}`);
+  if (node.tls) url.searchParams.set('security', 'tls');
+  if (node.sni) url.searchParams.set('sni', node.sni);
+  if (node.fp) url.searchParams.set('fp', node.fp);
+  if (node.alpn) url.searchParams.set('alpn', node.alpn);
+  if (node.ech) url.searchParams.set('ech', node.ech);
+  if (node.obfs) url.searchParams.set('obfs', node.obfs);
+  if (node.obfsPassword) url.searchParams.set('obfs-password', node.obfsPassword);
+  if (node.allowInsecure) url.searchParams.set('insecure', '1');
+  url.hash = node.name;
+  return url.toString();
+}
+
 function renderRaw(nodes) {
   const lines = nodes
     .map((node) => {
       if (node.type === 'vmess') return encodeVmess(node);
       if (node.type === 'vless') return encodeVless(node);
       if (node.type === 'trojan') return encodeTrojan(node);
+      if (node.type === 'hysteria2') return encodeHysteria2(node);
       return '';
     })
     .filter(Boolean);
