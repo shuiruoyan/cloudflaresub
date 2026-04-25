@@ -1122,15 +1122,23 @@ button.warning:hover {
   flex-wrap: wrap;
 }
 
+.col-check { width: 44px; }
+.col-index { width: 52px; }
+.col-name { width: 280px; }
+.col-type { width: 80px; }
+.col-server { width: 180px; }
+.col-port { width: 72px; }
+.col-host { width: 140px; }
+.col-sni { width: 140px; }
+.col-action { width: 60px; }
+
 .col-index {
-  width: 44px;
   text-align: center;
   color: var(--muted);
   font-size: 0.78rem;
 }
 
 .col-check {
-  width: 40px;
   text-align: center;
 }
 
@@ -1165,8 +1173,17 @@ button.warning:hover {
 }
 
 .col-action {
-  width: 60px;
   text-align: center;
+}
+
+.table-wrap td:nth-child(3),
+.table-wrap td:nth-child(5),
+.table-wrap td:nth-child(7),
+.table-wrap td:nth-child(8) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
 }
 
 .btn-delete {
@@ -1269,7 +1286,8 @@ button.warning:hover {
 .table-wrap table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 720px;
+  table-layout: fixed;
+  min-width: 1048px;
   font-size: 0.84rem;
 }
 
