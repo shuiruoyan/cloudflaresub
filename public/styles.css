@@ -341,7 +341,7 @@ h1, h2, h3, .eyebrow {
 /* ===== Theme Selector ===== */
 .theme-selector {
   position: relative;
-  z-index: 10;
+  z-index: 1000;
 }
 
 .theme-selector-trigger {
@@ -401,7 +401,7 @@ h1, h2, h3, .eyebrow {
 
 .theme-selector-families {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 6px;
 }
 
