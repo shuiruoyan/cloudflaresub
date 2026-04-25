@@ -235,13 +235,13 @@ function renderPreviewRows(preview, startIndex = 1) {
       (item, idx) => `
         <tr>
           <td class="col-check"><input type="checkbox" data-select-name="${escapeHtml(item.name)}" /></td>
-          <td class="col-index">${startIndex + idx}</td>
-          <td>${escapeHtml(item.name)}</td>
-          <td>${escapeHtml(item.type)}</td>
-          <td>${escapeHtml(item.server)}</td>
-          <td>${escapeHtml(String(item.port))}</td>
-          <td>${escapeHtml(item.host || '-')}</td>
-          <td>${escapeHtml(item.sni || '-')}</td>
+          <td class="col-index" title="${startIndex + idx}">${startIndex + idx}</td>
+          <td title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</td>
+          <td title="${escapeHtml(item.type)}">${escapeHtml(item.type)}</td>
+          <td title="${escapeHtml(item.server)}">${escapeHtml(item.server)}</td>
+          <td title="${escapeHtml(String(item.port))}">${escapeHtml(String(item.port))}</td>
+          <td title="${escapeHtml(item.host || '-')}">${escapeHtml(item.host || '-')}</td>
+          <td title="${escapeHtml(item.sni || '-')}">${escapeHtml(item.sni || '-')}</td>
           <td>
             <button type="button" class="btn-delete" data-exclude-name="${escapeHtml(item.name)}" aria-label="删除 ${escapeHtml(item.name)}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
