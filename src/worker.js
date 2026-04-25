@@ -111,6 +111,27 @@ function parseUrlLike(link, type) {
   };
 }
 
+function parseHysteria2(link) {
+  const u = new URL(link);
+  const security = (u.searchParams.get('security') || '').toLowerCase();
+  const allowInsecureRaw = u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '';
+  return {
+    type: 'hysteria2',
+    name: decodeURIComponent(u.hash.replace(/^#/, '')) || 'hysteria2',
+    server: u.hostname,
+    port: Number(u.port || 443),
+    password: decodeURIComponent(u.username),
+    tls: security === 'tls',
+    sni: u.searchParams.get('sni') || '',
+    fp: u.searchParams.get('fp') || '',
+    alpn: u.searchParams.get('alpn') || '',
+    ech: u.searchParams.get('ech') || '',
+    obfs: u.searchParams.get('obfs') || '',
+    obfsPassword: u.searchParams.get('obfs-password') || '',
+    allowInsecure: allowInsecureRaw === '1' || allowInsecureRaw.toLowerCase() === 'true',
+  };
+}
+
 function parseRawLinks(input) {
   const lines = String(input || '')
     .split(/\r?\n/)
@@ -131,9 +152,13 @@ function parseRawLinks(input) {
       result.push(parseUrlLike(line, 'trojan'));
       continue;
     }
+    if (line.startsWith('hysteria2://')) {
+      result.push(parseHysteria2(line));
+      continue;
+    }
     try {
       const decoded = b64DecodeUtf8(line);
-      if (/^(vmess|vless|trojan):\/\//m.test(decoded)) {
+      if (/^(vmess|vless|trojan|hysteria2):\/\//m.test(decoded)) {
         result.push(...parseRawLinks(decoded));
       }
     } catch {}
