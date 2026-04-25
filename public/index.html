@@ -102,10 +102,6 @@
               </svg>
             </button>
           </div>
-          <div class="hero-note">
-            <strong>适合场景</strong>
-            <p>3X-UI / Xray / VPS 自建节点 + 你自己找好的 Cloudflare 优选 IP。</p>
-          </div>
         </div>
       </section>
 
@@ -151,6 +147,10 @@ cf.example.com:443#US-Edge"
         </div>
 
         <div class="grid compact">
+          <label class="action-checkbox">
+            <input id="keepOriginalHost" name="keepOriginalHost" type="checkbox" checked />
+            <span>保留原节点 Host / SNI</span>
+          </label>
           <div>
             <label for="namePrefix">备注前缀（可选）</label>
             <input id="namePrefix" name="namePrefix" type="text" placeholder="例如 CF" />
@@ -159,10 +159,6 @@ cf.example.com:443#US-Edge"
         </div>
 
         <div class="actions">
-          <label class="action-checkbox">
-            <input id="keepOriginalHost" name="keepOriginalHost" type="checkbox" checked />
-            <span>保留原节点 Host / SNI</span>
-          </label>
           <button id="submitBtn" type="submit">保存配置</button>
         </div>
       </form>
