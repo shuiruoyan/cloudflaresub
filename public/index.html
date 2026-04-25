@@ -147,15 +147,15 @@ cf.example.com:443#US-Edge"
         </div>
 
         <div class="grid compact inline-fields">
-          <label class="action-checkbox">
-            <input id="keepOriginalHost" name="keepOriginalHost" type="checkbox" checked />
-            <span>保留原节点 Host / SNI</span>
-          </label>
           <div>
             <label for="namePrefix">备注前缀（可选）</label>
             <input id="namePrefix" name="namePrefix" type="text" placeholder="例如 CF" />
             <p class="hint">附加到每个节点名称中，方便区分。</p>
           </div>
+          <label class="action-checkbox">
+            <input id="keepOriginalHost" name="keepOriginalHost" type="checkbox" checked />
+            <span>保留原节点 Host / SNI</span>
+          </label>
         </div>
 
         <div class="actions">
