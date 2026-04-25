@@ -951,6 +951,48 @@ function setupThemeSelector() {
 
 document.getElementById('themeModeToggle')?.addEventListener('click', toggleThemeMode);
 
+// Tooltip for tab hint marks
+(function setupTabTooltips() {
+  let tooltipEl = null;
+
+  function showTooltip(target) {
+    const text = target.dataset.tooltip;
+    if (!text) return;
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.className = 'tab-hint-tooltip';
+      document.body.appendChild(tooltipEl);
+    }
+    tooltipEl.textContent = text;
+    const rect = target.getBoundingClientRect();
+    const tooltipRect = tooltipEl.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+    let top = rect.top - tooltipRect.height - 8;
+    if (left < 8) left = 8;
+    if (left + tooltipRect.width > window.innerWidth - 8) {
+      left = window.innerWidth - tooltipRect.width - 8;
+    }
+    if (top < 8) top = rect.bottom + 8;
+    tooltipEl.style.left = `${left}px`;
+    tooltipEl.style.top = `${top}px`;
+    tooltipEl.classList.add('visible');
+  }
+
+  function hideTooltip() {
+    if (tooltipEl) tooltipEl.classList.remove('visible');
+  }
+
+  document.addEventListener('mouseover', (e) => {
+    const mark = e.target.closest('.tab-hint-mark');
+    if (mark) showTooltip(mark);
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const mark = e.target.closest('.tab-hint-mark');
+    if (mark) hideTooltip();
+  });
+})();
+
 initTheme();
 setupThemeSelector();
 updateThemeSelectorUI();
