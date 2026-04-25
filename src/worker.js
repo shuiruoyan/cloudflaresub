@@ -877,6 +877,66 @@ async function handleResetExcluded(request, env, url) {
   }
 }
 
+async function handleExcludeNodes(request, env) {
+  try {
+    const tokenCheck = validateToken(request, new URL(request.url), env);
+    if (!tokenCheck.ok) return tokenCheck.response;
+
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
+    }
+
+    const names = body.names;
+    if (!Array.isArray(names) || names.length === 0) {
+      return json({ ok: false, error: '缺少节点名称列表' }, 400);
+    }
+
+    const excludedRaw = await env.SUB_STORE.get('sub:excluded');
+    let excluded = [];
+    if (excludedRaw) {
+      try { excluded = JSON.parse(excludedRaw); } catch {}
+    }
+    for (const name of names) {
+      if (typeof name === 'string' && !excluded.includes(name)) {
+        excluded.push(name);
+      }
+    }
+    await env.SUB_STORE.put('sub:excluded', JSON.stringify(excluded));
+
+    const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    if (fixedId) {
+      await saveMergedPayload(env, fixedId);
+    }
+
+    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
+    return json({
+      ok: true,
+      counts: {
+        preferredNodes: preferredCount,
+        aggregateNodes: aggregateCount,
+        totalNodes: preferredCount + aggregateCount,
+      },
+      preview: nodes.map((node) => ({
+        name: node.name,
+        type: node.type,
+        server: node.server,
+        port: node.port,
+        host: node.host || '',
+        sni: node.sni || '',
+      })),
+      excluded,
+    });
+  } catch (err) {
+    return json({ ok: false, error: '批量排除节点错误: ' + (err.message || String(err)) }, 500);
+  }
+}
+
 async function handleSub(url, env) {
   try {
     const tokenCheck = validateToken(null, url, env);
@@ -944,6 +1004,10 @@ export default {
 
       if (request.method === 'POST' && url.pathname === '/api/exclude-node') {
         return handleExcludeNode(request, env);
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/exclude-nodes') {
+        return handleExcludeNodes(request, env);
       }
 
       if (request.method === 'POST' && url.pathname === '/api/reset-excluded') {

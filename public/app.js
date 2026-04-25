@@ -148,6 +148,8 @@ const prevPageBtn = document.getElementById('prevPage');
 const nextPageBtn = document.getElementById('nextPage');
 const pageInfo = document.getElementById('pageInfo');
 const resetExcludedBtn = document.getElementById('resetExcludedBtn');
+const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+const selectAll = document.getElementById('selectAll');
 
 let previewAllData = [];
 let currentPage = 1;
@@ -221,6 +223,7 @@ function renderPreviewRows(preview) {
     .map(
       (item) => `
         <tr>
+          <td class="col-check"><input type="checkbox" data-select-name="${escapeHtml(item.name)}" /></td>
           <td>${escapeHtml(item.name)}</td>
           <td>${escapeHtml(item.type)}</td>
           <td>${escapeHtml(item.server)}</td>
@@ -250,13 +253,25 @@ function renderPagination() {
   nextPageBtn.disabled = currentPage >= totalPages;
 }
 
+function updateBatchDeleteButton() {
+  const checked = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]:checked');
+  if (checked.length > 0) {
+    batchDeleteBtn.classList.remove('hidden');
+    batchDeleteBtn.textContent = `批量删除 (${checked.length})`;
+  } else {
+    batchDeleteBtn.classList.add('hidden');
+  }
+}
+
 function applyPreviewPage() {
   const totalPages = Math.max(1, Math.ceil(previewAllData.length / PAGE_SIZE));
   if (currentPage > totalPages) currentPage = totalPages || 1;
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageData = previewAllData.slice(start, start + PAGE_SIZE);
   previewBody.innerHTML = renderPreviewRows(pageData);
+  selectAll.checked = false;
   renderPagination();
+  updateBatchDeleteButton();
 }
 
 function showResultState(counts, fixedId) {
@@ -291,6 +306,7 @@ function showPreview(preview, excluded) {
     previewBody.innerHTML = '';
     previewSection.classList.add('hidden');
     pagination.classList.add('hidden');
+    batchDeleteBtn.classList.add('hidden');
   }
 }
 
@@ -503,6 +519,15 @@ document.addEventListener('click', async (event) => {
     excludeNode(name);
     return;
   }
+
+  const checkbox = event.target.closest('input[type="checkbox"][data-select-name]');
+  if (checkbox) {
+    updateBatchDeleteButton();
+    const allBoxes = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]');
+    const checkedBoxes = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]:checked');
+    selectAll.checked = allBoxes.length > 0 && allBoxes.length === checkedBoxes.length;
+    return;
+  }
 });
 
 closeQrModal.addEventListener('click', closeQrDialog);
@@ -586,6 +611,43 @@ resetExcludedBtn.addEventListener('click', async () => {
   } catch (error) {
     showToast(error.message || '重置失败', 'error');
   }
+});
+
+// Batch delete handler
+batchDeleteBtn.addEventListener('click', async () => {
+  const checked = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]:checked');
+  const names = Array.from(checked).map((cb) => cb.dataset.selectName).filter(Boolean);
+  if (names.length === 0) return;
+
+  const confirmed = await showConfirm(`确定删除选中的 ${names.length} 个节点？`);
+  if (!confirmed) return;
+
+  batchDeleteBtn.disabled = true;
+  try {
+    const response = await apiFetch('/api/exclude-nodes', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ names }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || '批量删除失败');
+    }
+    showResultState(data.counts, fixedIdDisplay.textContent);
+    showPreview(data.preview, data.excluded);
+    showToast(`已删除 ${names.length} 个节点`, 'success');
+  } catch (error) {
+    showToast(error.message || '批量删除失败', 'error');
+  } finally {
+    batchDeleteBtn.disabled = false;
+  }
+});
+
+// Select all handler
+selectAll.addEventListener('change', () => {
+  const boxes = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]');
+  boxes.forEach((cb) => { cb.checked = selectAll.checked; });
+  updateBatchDeleteButton();
 });
 
 clientTabs.forEach((tab) => {

@@ -278,12 +278,16 @@ cf.example.com:443#US-Edge"
         <div id="previewSection" class="preview-wrap hidden">
           <div class="preview-head">
             <h3>节点预览</h3>
-            <button id="resetExcludedBtn" type="button" class="secondary small hidden">重置排除</button>
+            <div class="preview-actions">
+              <button id="batchDeleteBtn" type="button" class="secondary small hidden">批量删除</button>
+              <button id="resetExcludedBtn" type="button" class="secondary small hidden">重置排除</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
+                  <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
                   <th>名称</th>
                   <th>类型</th>
                   <th>服务器</th>
