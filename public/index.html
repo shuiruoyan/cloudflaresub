@@ -282,6 +282,20 @@ cf.example.com:443#US-Edge"
           </div>
           <div class="preview-toolbar">
             <button id="batchDeleteBtn" type="button" class="secondary small hidden">批量删除</button>
+            <div id="pagination" class="pagination hidden">
+              <button type="button" id="prevPage" class="secondary small">上一页</button>
+              <span id="pageInfo" class="page-info"></span>
+              <button type="button" id="nextPage" class="secondary small">下一页</button>
+              <div class="page-size">
+                <label for="pageSizeSelect">每页</label>
+                <select id="pageSizeSelect">
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="1000">全部</option>
+                </select>
+              </div>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
@@ -299,20 +313,6 @@ cf.example.com:443#US-Edge"
               </thead>
               <tbody id="previewBody"></tbody>
             </table>
-          </div>
-          <div id="pagination" class="pagination hidden">
-            <button type="button" id="prevPage" class="secondary small">上一页</button>
-            <span id="pageInfo" class="page-info"></span>
-            <button type="button" id="nextPage" class="secondary small">下一页</button>
-            <div class="page-size">
-              <label for="pageSizeSelect">每页</label>
-              <select id="pageSizeSelect">
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="1000">全部</option>
-              </select>
-            </div>
           </div>
         </div>
       </section>
