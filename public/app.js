@@ -883,22 +883,44 @@ function updateThemeSelectorUI() {
 function setupThemeSelector() {
   const trigger = document.getElementById('themeSelectorTrigger');
   const dropdown = document.getElementById('themeSelectorDropdown');
-  if (!trigger || !dropdown) return;
+  const originalParent = dropdown?.parentElement;
+  if (!trigger || !dropdown || !originalParent) return;
 
   function positionDropdown() {
     const rect = trigger.getBoundingClientRect();
-    dropdown.style.position = 'fixed';
-    dropdown.style.top = `${rect.bottom + 8}px`;
-    dropdown.style.left = `${rect.left}px`;
+    const scrollX = window.scrollX || window.pageXOffset;
+    const scrollY = window.scrollY || window.pageYOffset;
+    dropdown.style.position = 'absolute';
+    dropdown.style.top = `${rect.bottom + 8 + scrollY}px`;
+    dropdown.style.left = `${rect.left + scrollX}px`;
     dropdown.style.right = 'auto';
-    dropdown.style.width = `${rect.width}px`;
+    dropdown.style.width = '220px';
+  }
+
+  function showDropdown() {
+    document.body.appendChild(dropdown);
+    dropdown.classList.remove('hidden');
+    positionDropdown();
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function hideDropdown() {
+    dropdown.classList.add('hidden');
+    originalParent.appendChild(dropdown);
+    dropdown.style.top = '';
+    dropdown.style.left = '';
+    dropdown.style.right = '';
+    dropdown.style.width = '';
+    trigger.setAttribute('aria-expanded', 'false');
   }
 
   trigger.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isHidden = dropdown.classList.toggle('hidden');
-    if (!isHidden) positionDropdown();
-    trigger.setAttribute('aria-expanded', String(!isHidden));
+    if (dropdown.classList.contains('hidden')) {
+      showDropdown();
+    } else {
+      hideDropdown();
+    }
   });
 
   document.querySelectorAll('.theme-family-btn').forEach((btn) => {
@@ -909,21 +931,16 @@ function setupThemeSelector() {
 
   document.addEventListener('click', (e) => {
     if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-      dropdown.classList.add('hidden');
-      trigger.setAttribute('aria-expanded', 'false');
+      if (!dropdown.classList.contains('hidden')) hideDropdown();
     }
   });
 
   window.addEventListener('scroll', () => {
-    if (!dropdown.classList.contains('hidden')) {
-      positionDropdown();
-    }
+    if (!dropdown.classList.contains('hidden')) positionDropdown();
   }, { passive: true });
 
   window.addEventListener('resize', () => {
-    if (!dropdown.classList.contains('hidden')) {
-      positionDropdown();
-    }
+    if (!dropdown.classList.contains('hidden')) positionDropdown();
   });
 }
 
