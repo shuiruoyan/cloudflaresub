@@ -1232,16 +1232,19 @@ button.warning:hover {
   border-bottom: 1px solid rgba(0, 229, 160, 0.05);
 }
 
+.table-wrap thead tr {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
 .table-wrap th {
   color: var(--accent);
-  background: rgba(0, 229, 160, 0.04);
+  background: rgba(6, 10, 20, 0.95);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
-  position: sticky;
-  top: 0;
-  z-index: 2;
 }
 
 .table-wrap tr:last-child td {
@@ -2001,7 +2004,7 @@ button.warning:hover {
 }
 
 [data-theme="light"] .table-wrap th {
-  background: rgba(0, 184, 122, 0.04);
+  background: rgba(250, 251, 253, 0.95);
 }
 
 [data-theme="light"] .table-wrap th,
