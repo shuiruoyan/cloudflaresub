@@ -356,8 +356,9 @@ function showPreview(preview, excluded) {
     icon.classList.remove('active');
     icon.setAttribute('aria-expanded', 'false');
   });
+  document.querySelectorAll('.sort-indicator').forEach((el) => { el.textContent = ''; });
   document.querySelectorAll('th.sortable').forEach((th) => {
-    th.classList.remove('sort-asc', 'sort-desc', 'has-filter');
+    th.classList.remove('has-filter');
   });
 
   currentPage = 1;
@@ -623,11 +624,9 @@ document.addEventListener('click', async (event) => {
       sortField = field;
       sortOrder = 'asc';
     }
-    document.querySelectorAll('th[data-sort]').forEach((th) => {
-      th.classList.remove('sort-asc', 'sort-desc');
-    });
+    document.querySelectorAll('.sort-indicator').forEach((el) => { el.textContent = ''; });
     if (sortOrder) {
-      sortHeader.classList.add(sortOrder === 'asc' ? 'sort-asc' : 'sort-desc');
+      sortHeader.querySelector('.sort-indicator').textContent = sortOrder === 'asc' ? '▲' : '▼';
     }
     currentPage = 1;
     applyPreviewPage();

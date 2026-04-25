@@ -1304,23 +1304,13 @@ button.warning:hover {
   color: var(--text);
 }
 
-.table-wrap th.sortable::before {
-  content: '';
+.sort-indicator {
+  font-size: 0.65em;
+  color: var(--accent);
+  min-width: 0.9em;
+  text-align: center;
   display: inline-block;
-  width: 0;
-  margin-right: 4px;
-}
-
-.table-wrap th.sort-asc::before {
-  content: '▲';
-  font-size: 0.65em;
-  color: var(--accent);
-}
-
-.table-wrap th.sort-desc::before {
-  content: '▼';
-  font-size: 0.65em;
-  color: var(--accent);
+  line-height: 1;
 }
 
 .table-wrap th {
@@ -1330,20 +1320,20 @@ button.warning:hover {
 .th-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
 }
 
 .th-filter-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   padding: 8px;
   margin: -8px;
+  margin-left: auto;
   cursor: pointer;
   color: var(--muted);
   flex-shrink: 0;
   transition: color 0.2s, transform 0.2s, opacity 0.2s;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .th-filter-icon:hover {
