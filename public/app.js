@@ -894,7 +894,7 @@ function setupThemeSelector() {
     dropdown.style.top = `${rect.bottom + 8 + scrollY}px`;
     dropdown.style.left = `${rect.left + scrollX}px`;
     dropdown.style.right = 'auto';
-    dropdown.style.width = '220px';
+    dropdown.style.width = '130px';
   }
 
   function showDropdown() {

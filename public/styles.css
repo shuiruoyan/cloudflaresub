@@ -386,7 +386,7 @@ h1, h2, h3, .eyebrow {
 .theme-selector-dropdown {
   position: absolute;
   z-index: 100;
-  width: 220px;
+  width: 130px;
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: 10px;
