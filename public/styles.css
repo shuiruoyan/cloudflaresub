@@ -1311,6 +1311,7 @@ button.warning:hover {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .table-wrap th.sortable {
@@ -1339,6 +1340,7 @@ button.warning:hover {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 
 .th-filter-icon {
