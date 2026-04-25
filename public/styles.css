@@ -261,6 +261,30 @@ h1, h2, h3, .eyebrow {
   align-items: center;
 }
 
+.github-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--muted);
+  transition: all 0.25s ease;
+}
+
+.github-link svg {
+  width: 20px;
+  height: 20px;
+}
+
+.github-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
 /* ===== Theme Mode Toggle ===== */
 .theme-mode-toggle {
   appearance: none;
@@ -670,6 +694,7 @@ input[type="text"]::placeholder {
   cursor: pointer;
 }
 
+/* ===== Button System ===== */
 button {
   appearance: none;
   border: 1px solid transparent;
@@ -678,10 +703,8 @@ button {
   font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
-  background: var(--accent);
-  color: var(--accent-text);
   font-family: inherit;
-  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s, background 0.2s, border-color 0.2s, color 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -693,30 +716,35 @@ button {
   flex-shrink: 0;
 }
 
-button.small .btn-icon {
+button.small .btn-icon,
+.btn-small .btn-icon {
   width: 15px;
   height: 15px;
 }
 
-button:hover:not(:disabled) {
+/* Primary */
+.btn-primary,
+button:not([class]) {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.btn-primary:hover:not(:disabled),
+button:not([class]):hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--accent-dim);
 }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
+/* Secondary */
+.btn-secondary,
 button.secondary {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--card-border);
 }
 
+.btn-secondary:hover:not(:disabled),
 button.secondary:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--text);
@@ -724,22 +752,76 @@ button.secondary:hover:not(:disabled) {
   opacity: 1;
 }
 
-button.small {
+/* Danger */
+.btn-danger {
+  background: rgba(from var(--danger) r g b / 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(from var(--danger) r g b / 0.25);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(from var(--danger) r g b / 0.2);
+  border-color: rgba(from var(--danger) r g b / 0.4);
+  box-shadow: 0 4px 12px rgba(from var(--danger) r g b / 0.1);
+  opacity: 1;
+}
+
+/* Warning */
+.btn-warning,
+button.warning {
+  background: rgba(from var(--warning) r g b / 0.12);
+  color: var(--warning);
+  border: 1px solid rgba(from var(--warning) r g b / 0.25);
+}
+
+.btn-warning:hover:not(:disabled),
+button.warning:hover:not(:disabled) {
+  background: rgba(from var(--warning) r g b / 0.2);
+  border-color: rgba(from var(--warning) r g b / 0.4);
+  box-shadow: 0 4px 12px rgba(from var(--warning) r g b / 0.1);
+  opacity: 1;
+}
+
+/* Text */
+.btn-text,
+.text-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 4px 8px;
+  height: auto;
+  line-height: 1.4;
+}
+
+.btn-text:hover:not(:disabled),
+.text-btn:hover {
+  color: var(--text);
+  background: var(--accent-dim);
+}
+
+/* Size modifier */
+button.small,
+.btn-small {
   padding: 10px 14px;
   font-size: 0.76rem;
 }
 
-button.warning {
-  background: rgba(201, 160, 76, 0.15);
-  color: var(--warning);
-  border: 1px solid rgba(201, 160, 76, 0.3);
+/* Disabled states */
+button:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-danger:disabled,
+.btn-warning:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-button.warning:hover:not(:disabled) {
-  background: rgba(201, 160, 76, 0.25);
-  border-color: rgba(201, 160, 76, 0.45);
-  box-shadow: 0 4px 12px rgba(201, 160, 76, 0.1);
-  opacity: 1;
+.btn-text:disabled,
+.text-btn:disabled {
+  opacity: 0.35;
+  background: transparent;
 }
 
 /* ===== Tips / Sidebar ===== */
@@ -1304,19 +1386,6 @@ button.warning:hover:not(:disabled) {
   height: 14px;
 }
 
-.btn-danger {
-  background: rgba(196, 92, 92, 0.12);
-  color: var(--danger);
-  border-color: rgba(196, 92, 92, 0.25);
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: rgba(196, 92, 92, 0.2);
-  color: var(--danger);
-  border-color: rgba(196, 92, 92, 0.4);
-  box-shadow: 0 4px 12px rgba(196, 92, 92, 0.1);
-}
-
 .toolbar-left {
   display: flex;
   align-items: center;
@@ -1346,28 +1415,6 @@ button.warning:hover:not(:disabled) {
   line-height: 1;
 }
 
-.text-btn {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  font-size: 0.84rem;
-  padding: 4px 8px;
-  height: auto;
-  line-height: 1.4;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.text-btn:hover {
-  color: var(--text);
-  background: var(--accent-dim);
-}
-
-.text-btn:disabled {
-  opacity: 0.35;
-  background: transparent;
-}
 
 .page-size label {
   display: inline-flex;
