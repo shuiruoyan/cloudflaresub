@@ -123,7 +123,7 @@ h1, h2, h3, .eyebrow {
 .card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: 4px;
+  border-radius: 10px;
   position: relative;
   backdrop-filter: blur(20px);
   box-shadow: var(--shadow);
@@ -197,7 +197,7 @@ h1, h2, h3, .eyebrow {
   padding: 16px 20px;
   background: rgba(74, 158, 255, 0.04);
   border: 1px solid rgba(74, 158, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 0.85rem;
   max-width: 280px;
   align-self: start;
@@ -598,7 +598,7 @@ button.warning:hover {
 
 .client-box {
   padding: 16px 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: rgba(74, 158, 255, 0.03);
   border: 1px solid rgba(74, 158, 255, 0.08);
   margin-top: 20px;
@@ -860,7 +860,7 @@ button.warning:hover {
   display: flex;
   align-items: center;
   gap: 0;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid rgba(74, 158, 255, 0.15);
   background: rgba(8, 12, 28, 0.7);
   overflow: hidden;
@@ -925,7 +925,7 @@ button.warning:hover {
 /* ===== Empty State ===== */
 .empty-state {
   padding: 40px 24px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: rgba(148, 163, 184, 0.04);
   border: 1px solid rgba(148, 163, 184, 0.08);
   color: var(--muted);
@@ -996,7 +996,7 @@ button.warning:hover {
   gap: 12px;
   flex-wrap: wrap;
   padding: 10px 14px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid var(--card-border);
   background: rgba(8, 12, 28, 0.35);
   font-size: 0.82rem;
@@ -1032,7 +1032,7 @@ button.warning:hover {
 
 .sub-card {
   padding: 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid var(--card-border);
   background: rgba(8, 12, 28, 0.4);
   position: relative;
@@ -1303,7 +1303,7 @@ button.warning:hover {
   background: var(--card);
   color: var(--text);
   border: 1px solid var(--card-border);
-  border-radius: 4px;
+  border-radius: 10px;
   padding: 3px 8px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -1570,7 +1570,7 @@ button.warning:hover {
   width: min(92vw, 400px);
   margin: 0;
   padding: 24px;
-  border-radius: 4px;
+  border-radius: 10px;
   background: #0e1528;
   border: 1px solid var(--card-border);
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
@@ -1612,7 +1612,7 @@ button.warning:hover {
   width: 244px;
   min-height: 244px;
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: #fff;
   display: grid;
   place-items: center;
@@ -1653,7 +1653,7 @@ button.warning:hover {
   form.card,
   .tips,
   #resultSection {
-    border-radius: 4px;
+    border-radius: 10px;
     padding: 20px;
   }
 
@@ -1718,7 +1718,7 @@ button.warning:hover {
   }
 
   .table-wrap {
-    border-radius: 4px;
+    border-radius: 10px;
   }
 
   .hero-title {
@@ -1857,7 +1857,7 @@ button.warning:hover {
 .login-card {
   background: var(--login-card-bg);
   border: 1px solid var(--login-card-border);
-  border-radius: 4px;
+  border-radius: 10px;
   padding: 44px 40px 32px;
   backdrop-filter: blur(20px);
   box-shadow:
@@ -2090,7 +2090,7 @@ button.warning:hover {
   min-width: 260px;
   max-width: 400px;
   padding: 14px 18px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: rgba(10, 16, 34, 0.95);
   border: 1px solid var(--card-border);
   border-left: 3px solid var(--accent);
