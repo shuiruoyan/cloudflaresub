@@ -1713,10 +1713,6 @@ button.warning:hover {
     white-space: nowrap;
   }
 
-  .copy-row {
-    grid-template-columns: 1fr;
-  }
-
   .table-wrap {
     border-radius: 10px;
   }

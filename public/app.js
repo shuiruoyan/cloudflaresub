@@ -83,7 +83,6 @@ function hideLogin() {
   document.getElementById('loginError').classList.add('hidden');
 }
 
-// API helper
 async function apiFetch(path, opts = {}) {
   const res = await fetch(path, {
     ...opts,
@@ -100,7 +99,27 @@ async function apiFetch(path, opts = {}) {
   return res;
 }
 
-// DOM refs
+async function apiAction({ path, method = 'POST', body, btn, loadingText = '保存中...', successText, onSuccess }) {
+  if (btn) { btn.disabled = true; btn.textContent = loadingText; }
+  try {
+    const res = await apiFetch(path, {
+      method,
+      headers: { 'content-type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || '请求失败');
+    if (onSuccess) onSuccess(data);
+    if (successText) showToast(successText, 'success');
+    return data;
+  } catch (err) {
+    showToast(err.message || '请求失败', 'error');
+    throw err;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '保存配置'; }
+  }
+}
+
 const submitBtn = document.getElementById('submitBtn');
 const rotateUrlBtn = document.getElementById('rotateUrlBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -142,6 +161,9 @@ const aggregateForm = document.getElementById('generator-form-aggregate');
 const aggregateNodeLinks = document.getElementById('aggregateNodeLinks');
 const submitAggregateBtn = document.getElementById('submitAggregateBtn');
 
+const modeIndicator = document.querySelector('.mode-tab-indicator');
+const modeTabsContainer = document.querySelector('.mode-tabs');
+
 // Pagination & exclude refs
 const pagination = document.getElementById('pagination');
 const prevPageBtn = document.getElementById('prevPage');
@@ -165,7 +187,7 @@ const columnFilters = {
   port: '',
 };
 let sortField = '';
-let sortOrder = ''; // 'asc' | 'desc' | ''
+let sortOrder = '';
 
 logoutBtn.addEventListener('click', () => {
   localStorage.removeItem(TOKEN_KEY);
@@ -195,8 +217,7 @@ loginForm.addEventListener('submit', async (e) => {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || '登录失败');
 
-    // 登录成功后，保存一个标记到 localStorage（实际API调用仍需输密码）
-    localStorage.setItem(TOKEN_KEY, data.token || '');
+      localStorage.setItem(TOKEN_KEY, data.token || '');
     hideLogin();
     await loadConfig();
   } catch (err) {
@@ -252,9 +273,7 @@ function renderPreviewRows(preview, startIndex = 1) {
     .join('');
 }
 
-function renderPagination() {
-  const displayData = filterAndSortData();
-  const total = displayData.length;
+function renderPagination(total) {
   if (total === 0) {
     pagination.classList.add('hidden');
     return;
@@ -322,7 +341,7 @@ function applyPreviewPage() {
     selectAll.disabled = false;
   }
   selectAll.checked = false;
-  renderPagination();
+  renderPagination(displayData.length);
   updateBatchDeleteButton();
 }
 
@@ -406,48 +425,25 @@ preferredForm.addEventListener('submit', async (event) => {
   warningBox.classList.add('hidden');
   previewBody.innerHTML = '';
 
-  const payload = {
-    mode: 'preferred',
-    nodeLinks: nodeLinks.value,
-    preferredIps: preferredIps.value,
-    namePrefix: namePrefixInput.value,
-    keepOriginalHost: keepOriginalHost.checked,
-  };
-
-  submitBtn.disabled = true;
-  submitBtn.textContent = '保存中...';
-
-  try {
-    const response = await apiFetch('/api/update-subscription', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || '保存失败');
-    }
-
-    showResultState(data.counts, data.fixedId);
-    showPreview(data.preview, data.excluded);
-
-    if (Array.isArray(data.warnings) && data.warnings.length) {
-      showToast(data.warnings.join('\n'), 'warning', 5000);
-    }
-
-    if (data.isNew) {
-      showToast('首次保存，已生成订阅链接。', 'success');
-    } else {
-      showToast('配置已保存', 'success');
-    }
-
-    smoothScrollToElement(resultSection, 650);
-  } catch (error) {
-    showToast(error.message || '请求失败', 'error');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = '保存配置';
-  }
+  await apiAction({
+    path: '/api/update-subscription',
+    body: {
+      mode: 'preferred',
+      nodeLinks: nodeLinks.value,
+      preferredIps: preferredIps.value,
+      namePrefix: namePrefixInput.value,
+      keepOriginalHost: keepOriginalHost.checked,
+    },
+    btn: submitBtn,
+    successText: '配置已保存',
+    onSuccess(data) {
+      showResultState(data.counts, data.fixedId);
+      showPreview(data.preview, data.excluded);
+      if (data.warnings?.length) showToast(data.warnings.join('\n'), 'warning', 5000);
+      if (data.isNew) showToast('首次保存，已生成订阅链接。', 'success');
+      smoothScrollToElement(resultSection, 650);
+    },
+  });
 });
 
 aggregateForm.addEventListener('submit', async (event) => {
@@ -455,67 +451,35 @@ aggregateForm.addEventListener('submit', async (event) => {
   warningBox.classList.add('hidden');
   previewBody.innerHTML = '';
 
-  const payload = {
-    mode: 'aggregate',
-    nodeLinks: aggregateNodeLinks.value,
-  };
-
-  submitAggregateBtn.disabled = true;
-  submitAggregateBtn.textContent = '保存中...';
-
-  try {
-    const response = await apiFetch('/api/update-subscription', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || '保存失败');
-    }
-
-    showResultState(data.counts, data.fixedId);
-    showPreview(data.preview, data.excluded);
-
-    if (Array.isArray(data.warnings) && data.warnings.length) {
-      showToast(data.warnings.join('\n'), 'warning', 5000);
-    }
-
-    showToast('聚合节点已保存', 'success');
-    smoothScrollToElement(resultSection, 650);
-  } catch (error) {
-    showToast(error.message || '请求失败', 'error');
-  } finally {
-    submitAggregateBtn.disabled = false;
-    submitAggregateBtn.textContent = '保存配置';
-  }
+  await apiAction({
+    path: '/api/update-subscription',
+    body: { mode: 'aggregate', nodeLinks: aggregateNodeLinks.value },
+    btn: submitAggregateBtn,
+    successText: '聚合节点已保存',
+    onSuccess(data) {
+      showResultState(data.counts, data.fixedId);
+      showPreview(data.preview, data.excluded);
+      if (data.warnings?.length) showToast(data.warnings.join('\n'), 'warning', 5000);
+      smoothScrollToElement(resultSection, 650);
+    },
+  });
 });
 
 rotateUrlBtn.addEventListener('click', async () => {
   const confirmed = await showConfirm('更新订阅URL后，旧链接将失效。客户端需要重新配置。确定继续？');
   if (!confirmed) return;
 
-  rotateUrlBtn.disabled = true;
-  rotateUrlBtn.textContent = '更新中...';
-
-  try {
-    const response = await apiFetch('/api/update-url', { method: 'POST' });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || '更新失败');
-    }
-
-    populateUrls(data.fixedId);
-    fixedIdDisplay.textContent = data.fixedId;
-
-    showToast('订阅URL已更新，请复制新链接到客户端。', 'success');
-    smoothScrollToElement(resultSection, 650);
-  } catch (error) {
-    showToast(error.message || '请求失败', 'error');
-  } finally {
-    rotateUrlBtn.disabled = false;
-    rotateUrlBtn.textContent = '更新订阅URL';
-  }
+  await apiAction({
+    path: '/api/update-url',
+    btn: rotateUrlBtn,
+    loadingText: '更新中...',
+    successText: '订阅URL已更新，请复制新链接到客户端。',
+    onSuccess(data) {
+      populateUrls(data.fixedId);
+      fixedIdDisplay.textContent = data.fixedId;
+      smoothScrollToElement(resultSection, 650);
+    },
+  });
 });
 
 // Copy & QR code handlers
@@ -641,15 +605,13 @@ document.addEventListener('click', async (event) => {
 closeQrModal.addEventListener('click', closeQrDialog);
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    if (!qrModal.classList.contains('hidden')) {
-      closeQrDialog();
-    }
-    const confirmModal = document.getElementById('confirmModal');
-    if (confirmModal && !confirmModal.classList.contains('hidden')) {
-      confirmModal.querySelector('#confirmCancel')?.click();
-    }
+  if (e.key !== 'Escape') return;
+  if (!qrModal.classList.contains('hidden')) closeQrDialog();
+  const confirmModal = document.getElementById('confirmModal');
+  if (confirmModal && !confirmModal.classList.contains('hidden')) {
+    confirmModal.querySelector('#confirmCancel')?.click();
   }
+  closeAllFilterPopovers();
 });
 
 function closeQrDialog() {
@@ -667,7 +629,6 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-// Pagination handlers
 prevPageBtn.addEventListener('click', () => {
   if (currentPage > 1) {
     currentPage--;
@@ -676,7 +637,7 @@ prevPageBtn.addEventListener('click', () => {
 });
 
 nextPageBtn.addEventListener('click', () => {
-  const totalPages = Math.max(1, Math.ceil(previewAllData.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(filterAndSortData().length / pageSize));
   if (currentPage < totalPages) {
     currentPage++;
     applyPreviewPage();
@@ -698,7 +659,6 @@ function updateFilterVisuals(field) {
   if (th) th.classList.toggle('has-filter', hasValue);
 }
 
-// Column filter: popover input/select handlers (delegated)
 document.addEventListener('input', (event) => {
   const popover = event.target.closest('.th-filter-popover');
   if (!popover) return;
@@ -726,7 +686,6 @@ function closeAllFilterPopovers() {
   document.querySelectorAll('.th-filter-icon').forEach((icon) => icon.setAttribute('aria-expanded', 'false'));
 }
 
-// Close filter popovers when clicking outside the table
 document.addEventListener('click', (event) => {
   if (event.target.closest('.th-filter-icon') || event.target.closest('.th-filter-popover')) {
     return;
@@ -734,30 +693,19 @@ document.addEventListener('click', (event) => {
   closeAllFilterPopovers();
 });
 
-// Close popovers with Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeAllFilterPopovers();
-  }
-});
-
-// Exclude / reset handlers
 async function excludeNode(name) {
   try {
-    const response = await apiFetch('/api/exclude-node', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name }),
+    await apiAction({
+      path: '/api/exclude-node',
+      body: { name },
+      successText: `已删除「${name}」`,
+      onSuccess(data) {
+        showResultState(data.counts, fixedIdDisplay.textContent);
+        showPreview(data.preview, data.excluded);
+      },
     });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || '删除失败');
-    }
-    showResultState(data.counts, fixedIdDisplay.textContent);
-    showPreview(data.preview, data.excluded);
-    showToast(`已删除「${name}」`, 'success');
-  } catch (error) {
-    showToast(error.message || '删除失败', 'error');
+  } catch {
+    // toast already shown by apiAction
   }
 }
 
@@ -766,20 +714,19 @@ resetExcludedBtn.addEventListener('click', async () => {
   if (!confirmed) return;
 
   try {
-    const response = await apiFetch('/api/reset-excluded', { method: 'POST' });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || '重置失败');
-    }
-    showResultState(data.counts, fixedIdDisplay.textContent);
-    showPreview(data.preview, data.excluded);
-    showToast('已重置排除列表', 'success');
-  } catch (error) {
-    showToast(error.message || '重置失败', 'error');
+    await apiAction({
+      path: '/api/reset-excluded',
+      successText: '已重置排除列表',
+      onSuccess(data) {
+        showResultState(data.counts, fixedIdDisplay.textContent);
+        showPreview(data.preview, data.excluded);
+      },
+    });
+  } catch {
+    // toast already shown by apiAction
   }
 });
 
-// Batch delete handler
 batchDeleteBtn.addEventListener('click', async () => {
   const checked = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]:checked');
   const names = Array.from(checked).map((cb) => cb.dataset.selectName).filter(Boolean);
@@ -788,28 +735,22 @@ batchDeleteBtn.addEventListener('click', async () => {
   const confirmed = await showConfirm(`确定删除选中的 ${names.length} 个节点？`);
   if (!confirmed) return;
 
-  batchDeleteBtn.disabled = true;
   try {
-    const response = await apiFetch('/api/exclude-nodes', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ names }),
+    await apiAction({
+      path: '/api/exclude-nodes',
+      body: { names },
+      btn: batchDeleteBtn,
+      successText: `已删除 ${names.length} 个节点`,
+      onSuccess(data) {
+        showResultState(data.counts, fixedIdDisplay.textContent);
+        showPreview(data.preview, data.excluded);
+      },
     });
-    const data = await response.json();
-    if (!response.ok || !data.ok) {
-      throw new Error(data.error || '批量删除失败');
-    }
-    showResultState(data.counts, fixedIdDisplay.textContent);
-    showPreview(data.preview, data.excluded);
-    showToast(`已删除 ${names.length} 个节点`, 'success');
-  } catch (error) {
-    showToast(error.message || '批量删除失败', 'error');
-  } finally {
-    batchDeleteBtn.disabled = false;
+  } catch {
+    // toast already shown by apiAction
   }
 });
 
-// Select all handler
 selectAll.addEventListener('change', () => {
   const boxes = previewBody.querySelectorAll('input[type="checkbox"][data-select-name]');
   boxes.forEach((cb) => { cb.checked = selectAll.checked; });
@@ -825,16 +766,13 @@ clientTabs.forEach((tab) => {
   });
 });
 
-// Mode tab switching
 function updateModeIndicator() {
-  const indicator = document.querySelector('.mode-tab-indicator');
   const activeTab = document.querySelector('.mode-tab.active');
-  if (!indicator || !activeTab) return;
-  const parent = activeTab.parentElement;
-  const parentRect = parent.getBoundingClientRect();
+  if (!modeIndicator || !activeTab || !modeTabsContainer) return;
+  const parentRect = modeTabsContainer.getBoundingClientRect();
   const tabRect = activeTab.getBoundingClientRect();
-  indicator.style.left = `${tabRect.left - parentRect.left + parent.scrollLeft}px`;
-  indicator.style.width = `${tabRect.width}px`;
+  modeIndicator.style.left = `${tabRect.left - parentRect.left + modeTabsContainer.scrollLeft}px`;
+  modeIndicator.style.width = `${tabRect.width}px`;
 }
 
 function setActiveMode(mode) {
@@ -888,7 +826,6 @@ function toggleTheme() {
 initTheme();
 document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
 
-// Empty state CTA — focus first input of active form
 document.getElementById('emptyStateCta')?.addEventListener('click', () => {
   const activeForm = document.querySelector('.mode-form.active');
   const firstInput = activeForm?.querySelector('textarea, input');

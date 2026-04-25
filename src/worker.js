@@ -1,9 +1,12 @@
-// Cloudflare Worker: Fixed subscription URL with token protection
-// Requires:
-// - KV namespace binding: SUB_STORE
-// - Secret/Variable: AUTHOR_NAME (登录用户名)
-// - Secret/Variable: ADMIN_PASSWORD (登录密码)
-// - Secret/Variable: SUB_ACCESS_TOKEN (订阅链接访问令牌)
+const MODE_PREFERRED = 'preferred';
+const MODE_AGGREGATE = 'aggregate';
+const TYPE_VMESS = 'vmess';
+const TYPE_VLESS = 'vless';
+const TYPE_TROJAN = 'trojan';
+const TYPE_HYSTERIA2 = 'hysteria2';
+const TARGET_CLASH = 'clash';
+const TARGET_SURGE = 'surge';
+const TARGET_RAW = 'raw';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -79,7 +82,7 @@ function parseVmess(link) {
   const raw = link.slice('vmess://'.length).trim();
   const obj = JSON.parse(b64DecodeUtf8(raw));
   return {
-    type: 'vmess',
+    type: TYPE_VMESS,
     name: obj.ps || 'vmess',
     server: obj.add,
     port: Number(obj.port || 443),
@@ -103,8 +106,8 @@ function parseUrlLike(link, type) {
     name: decodeURIComponent(u.hash.replace(/^#/, '')) || type,
     server: u.hostname,
     port: Number(u.port || 443),
-    password: type === 'trojan' ? decodeURIComponent(u.username) : undefined,
-    uuid: type === 'vless' ? decodeURIComponent(u.username) : undefined,
+    password: type === TYPE_TROJAN ? decodeURIComponent(u.username) : undefined,
+    uuid: type === TYPE_VLESS ? decodeURIComponent(u.username) : undefined,
     network: u.searchParams.get('type') || 'tcp',
     tls: security === 'tls' || security === 'reality',
     security: security || undefined,
@@ -116,7 +119,7 @@ function parseUrlLike(link, type) {
     fp: u.searchParams.get('fp') || '',
     alpn: u.searchParams.get('alpn') || '',
     flow: u.searchParams.get('flow') || '',
-    encryption: type === 'vless' ? (u.searchParams.get('encryption') || 'none') : undefined,
+    encryption: type === TYPE_VLESS ? (u.searchParams.get('encryption') || 'none') : undefined,
     allowInsecure: (u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '') === '1' || (u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '').toLowerCase() === 'true',
     pbk: u.searchParams.get('pbk') || '',
     sid: u.searchParams.get('sid') || '',
@@ -137,8 +140,8 @@ function parseHysteria2(link) {
   const security = (u.searchParams.get('security') || '').toLowerCase();
   const allowInsecureRaw = u.searchParams.get('allowInsecure') || u.searchParams.get('insecure') || '';
   return {
-    type: 'hysteria2',
-    name: safeDecodeUriComponent(u.hash.replace(/^#/, '')) || 'hysteria2',
+    type: TYPE_HYSTERIA2,
+    name: safeDecodeUriComponent(u.hash.replace(/^#/, '')) || TYPE_HYSTERIA2,
     server,
     originalServer: server,
     port,
@@ -162,19 +165,19 @@ function parseRawLinks(input) {
 
   const result = [];
   for (const line of lines) {
-    if (line.startsWith('vmess://')) {
+    if (line.startsWith(`${TYPE_VMESS}://`)) {
       result.push(parseVmess(line));
       continue;
     }
-    if (line.startsWith('vless://')) {
-      result.push(parseUrlLike(line, 'vless'));
+    if (line.startsWith(`${TYPE_VLESS}://`)) {
+      result.push(parseUrlLike(line, TYPE_VLESS));
       continue;
     }
-    if (line.startsWith('trojan://')) {
-      result.push(parseUrlLike(line, 'trojan'));
+    if (line.startsWith(`${TYPE_TROJAN}://`)) {
+      result.push(parseUrlLike(line, TYPE_TROJAN));
       continue;
     }
-    if (line.startsWith('hysteria2://')) {
+    if (line.startsWith(`${TYPE_HYSTERIA2}://`)) {
       result.push(parseHysteria2(line));
       continue;
     }
@@ -300,10 +303,10 @@ function encodeHysteria2(node) {
 function renderRaw(nodes) {
   const lines = nodes
     .map((node) => {
-      if (node.type === 'vmess') return encodeVmess(node);
-      if (node.type === 'vless') return encodeVless(node);
-      if (node.type === 'trojan') return encodeTrojan(node);
-      if (node.type === 'hysteria2') return encodeHysteria2(node);
+      if (node.type === TYPE_VMESS) return encodeVmess(node);
+      if (node.type === TYPE_VLESS) return encodeVless(node);
+      if (node.type === TYPE_TROJAN) return encodeTrojan(node);
+      if (node.type === TYPE_HYSTERIA2) return encodeHysteria2(node);
       return '';
     })
     .filter(Boolean);
@@ -313,7 +316,7 @@ function renderRaw(nodes) {
 function renderClash(nodes) {
   const proxies = nodes
     .map((node) => {
-      if (node.type === 'vmess') {
+      if (node.type === TYPE_VMESS) {
         const lines = [
           `  - name: "${escapeYaml(node.name)}"`,
           `    type: vmess`,
@@ -349,7 +352,7 @@ function renderClash(nodes) {
         return lines.join('\n');
       }
 
-      if (node.type === 'vless') {
+      if (node.type === TYPE_VLESS) {
         const lines = [
           `  - name: "${escapeYaml(node.name)}"`,
           `    type: vless`,
@@ -414,7 +417,7 @@ function renderClash(nodes) {
         return lines.join('\n');
       }
 
-      if (node.type === 'trojan') {
+      if (node.type === TYPE_TROJAN) {
         const lines = [
           `  - name: "${escapeYaml(node.name)}"`,
           `    type: trojan`,
@@ -448,7 +451,7 @@ function renderClash(nodes) {
         return lines.join('\n');
       }
 
-      if (node.type === 'hysteria2') {
+      if (node.type === TYPE_HYSTERIA2) {
         const lines = [
           `  - name: "${escapeYaml(node.name)}"`,
           `    type: hysteria2`,
@@ -541,12 +544,12 @@ function renderClash(nodes) {
 
 function renderSurge(nodes, baseUrl, accessToken) {
   const proxies = nodes
-    .filter((node) => node.type === 'vmess' || node.type === 'trojan' || node.type === 'hysteria2')
+    .filter((node) => node.type === TYPE_VMESS || node.type === TYPE_TROJAN || node.type === TYPE_HYSTERIA2)
     .map((node) => {
-      if (node.type === 'vmess') {
+      if (node.type === TYPE_VMESS) {
         return `${node.name} = vmess, ${node.server}, ${node.port}, username=${node.uuid}, ws=true, ws-path=${node.path || '/'}, ws-headers=Host:${node.host || ''}, tls=${node.tls ? 'true' : 'false'}, sni=${node.sni || ''}`;
       }
-      if (node.type === 'trojan') {
+      if (node.type === TYPE_TROJAN) {
         return `${node.name} = trojan, ${node.server}, ${node.port}, password=${node.password || ''}, sni=${node.sni || ''}`;
       }
       // hysteria2
@@ -569,7 +572,7 @@ function renderSurge(nodes, baseUrl, accessToken) {
     '[Proxy Group]',
     'Proxy = select, ' +
       nodes
-        .filter((n) => n.type === 'vmess' || n.type === 'trojan' || n.type === 'hysteria2')
+        .filter((n) => n.type === TYPE_VMESS || n.type === TYPE_TROJAN || n.type === TYPE_HYSTERIA2)
         .map((n) => n.name)
         .join(', '),
     '',
@@ -687,6 +690,37 @@ function checkBindings(env) {
   return { ok: true };
 }
 
+async function withHandler(request, env, url, handler) {
+  try {
+    const tokenCheck = validateToken(request, url, env);
+    if (!tokenCheck.ok) return tokenCheck.response;
+    const bindCheck = checkBindings(env);
+    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
+    return await handler();
+  } catch (err) {
+    return json({ ok: false, error: err.message || String(err) }, 500);
+  }
+}
+
+function buildPreview(nodes) {
+  return nodes.map((n) => ({
+    name: n.name,
+    type: n.type,
+    server: n.server,
+    port: n.port,
+    host: n.host || '',
+    sni: n.sni || '',
+  }));
+}
+
+function buildCounts(preferredCount, aggregateCount) {
+  return {
+    preferredNodes: preferredCount,
+    aggregateNodes: aggregateCount,
+    totalNodes: preferredCount + aggregateCount,
+  };
+}
+
 async function handleLogin(request, env) {
   try {
     let body;
@@ -713,13 +747,7 @@ async function handleLogin(request, env) {
 }
 
 async function handleGetSubscription(request, env, url) {
-  try {
-    const tokenCheck = validateToken(request, url, env);
-    if (!tokenCheck.ok) return tokenCheck.response;
-
-    const bindCheck = checkBindings(env);
-    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
-
+  return withHandler(request, env, url, async () => {
     const [dataRaw, aggRaw, fixedId] = await Promise.all([
       env.SUB_STORE.get('sub:data'),
       env.SUB_STORE.get('sub:aggregate'),
@@ -748,35 +776,16 @@ async function handleGetSubscription(request, env, url) {
     };
 
     const { nodes, preferredCount, aggregateCount, excluded } = await buildMergedNodes(env);
-    result.counts = {
-      preferredNodes: preferredCount,
-      aggregateNodes: aggregateCount,
-      totalNodes: preferredCount + aggregateCount,
-    };
-    result.preview = nodes.map((node) => ({
-      name: node.name,
-      type: node.type,
-      server: node.server,
-      port: node.port,
-      host: node.host || '',
-      sni: node.sni || '',
-    }));
+    result.counts = buildCounts(preferredCount, aggregateCount);
+    result.preview = buildPreview(nodes);
     result.excluded = excluded;
 
     return json(result);
-  } catch (err) {
-    return json({ ok: false, error: '获取订阅错误: ' + (err.message || String(err)) }, 500);
-  }
+  });
 }
 
 async function handleUpdateSubscription(request, env, url) {
-  try {
-    const tokenCheck = validateToken(request, url, env);
-    if (!tokenCheck.ok) return tokenCheck.response;
-
-    const bindCheck = checkBindings(env);
-    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
-
+  return withHandler(request, env, url, async () => {
     let body;
     try {
       body = await request.json();
@@ -784,13 +793,13 @@ async function handleUpdateSubscription(request, env, url) {
       return json({ ok: false, error: '请求体不是合法 JSON' }, 400);
     }
 
-    const mode = body.mode || 'preferred';
+    const mode = body.mode || MODE_PREFERRED;
 
-    if (mode === 'preferred') {
+    if (mode === MODE_PREFERRED) {
       const baseNodes = parseRawLinks(body.nodeLinks || '');
       const preferredEndpoints = parsePreferredEndpoints(body.preferredIps || '');
 
-      const hy2Nodes = baseNodes.filter((n) => n.type === 'hysteria2');
+      const hy2Nodes = baseNodes.filter((n) => n.type === TYPE_HYSTERIA2);
       if (hy2Nodes.length) {
         return json({ ok: false, error: `优选 IP 模式不支持 Hysteria2 节点（检测到 ${hy2Nodes.length} 个）。请切换到聚合模式，或移除 Hysteria2 链接。` }, 400);
       }
@@ -805,7 +814,7 @@ async function handleUpdateSubscription(request, env, url) {
           keepOriginalHost: body.keepOriginalHost !== false,
         }));
       }
-    } else if (mode === 'aggregate') {
+    } else if (mode === MODE_AGGREGATE) {
       const baseNodes = parseRawLinks(body.nodeLinks || '');
       if (!baseNodes.length) {
         await env.SUB_STORE.delete('sub:aggregate');
@@ -818,10 +827,8 @@ async function handleUpdateSubscription(request, env, url) {
       return json({ ok: false, error: '不支持的 mode，请使用 preferred 或 aggregate' }, 400);
     }
 
-    // Clear excluded list on every save
     await env.SUB_STORE.delete('sub:excluded');
 
-    // Get or create fixed ID
     let fixedId = await env.SUB_STORE.get('sub:fixed-id');
     let isNew = false;
     if (!fixedId) {
@@ -830,7 +837,6 @@ async function handleUpdateSubscription(request, env, url) {
       isNew = true;
     }
 
-    // Rebuild merged payload
     const { nodes, preferredCount, aggregateCount, excluded } = await saveMergedPayload(env, fixedId);
 
     const origin = url.origin;
@@ -846,35 +852,16 @@ async function handleUpdateSubscription(request, env, url) {
         clash: buildSubUrl(origin, fixedId, 'clash', accessToken),
         surge: buildSubUrl(origin, fixedId, 'surge', accessToken),
       },
-      counts: {
-        preferredNodes: preferredCount,
-        aggregateNodes: aggregateCount,
-        totalNodes: preferredCount + aggregateCount,
-      },
-      preview: nodes.map((node) => ({
-        name: node.name,
-        type: node.type,
-        server: node.server,
-        port: node.port,
-        host: node.host || '',
-        sni: node.sni || '',
-      })),
+      counts: buildCounts(preferredCount, aggregateCount),
+      preview: buildPreview(nodes),
       excluded,
       warnings: accessToken ? [] : ['未检测到 SUB_ACCESS_TOKEN，订阅链接将没有访问保护。'],
     });
-  } catch (err) {
-    return json({ ok: false, error: '保存配置错误: ' + (err.message || String(err)) }, 500);
-  }
+  });
 }
 
 async function handleUpdateUrl(request, env, url) {
-  try {
-    const tokenCheck = validateToken(request, url, env);
-    if (!tokenCheck.ok) return tokenCheck.response;
-
-    const bindCheck = checkBindings(env);
-    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
-
+  return withHandler(request, env, url, async () => {
     const [dataRaw, aggRaw, oldId] = await Promise.all([
       env.SUB_STORE.get('sub:data'),
       env.SUB_STORE.get('sub:aggregate'),
@@ -904,19 +891,11 @@ async function handleUpdateUrl(request, env, url) {
         surge: buildSubUrl(origin, newId, 'surge', accessToken),
       },
     });
-  } catch (err) {
-    return json({ ok: false, error: '更新URL错误: ' + (err.message || String(err)) }, 500);
-  }
+  });
 }
 
 async function handleExcludeNode(request, env) {
-  try {
-    const tokenCheck = validateToken(request, new URL(request.url), env);
-    if (!tokenCheck.ok) return tokenCheck.response;
-
-    const bindCheck = checkBindings(env);
-    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
-
+  return withHandler(request, env, new URL(request.url), async () => {
     let body;
     try {
       body = await request.json();
@@ -940,79 +919,51 @@ async function handleExcludeNode(request, env) {
     }
 
     const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    let nodes = [];
+    let preferredCount = 0;
+    let aggregateCount = 0;
     if (fixedId) {
-      await saveMergedPayload(env, fixedId);
+      const result = await saveMergedPayload(env, fixedId);
+      nodes = result.nodes;
+      preferredCount = result.preferredCount;
+      aggregateCount = result.aggregateCount;
     }
 
-    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
     return json({
       ok: true,
-      counts: {
-        preferredNodes: preferredCount,
-        aggregateNodes: aggregateCount,
-        totalNodes: preferredCount + aggregateCount,
-      },
-      preview: nodes.map((node) => ({
-        name: node.name,
-        type: node.type,
-        server: node.server,
-        port: node.port,
-        host: node.host || '',
-        sni: node.sni || '',
-      })),
+      counts: buildCounts(preferredCount, aggregateCount),
+      preview: buildPreview(nodes),
       excluded,
     });
-  } catch (err) {
-    return json({ ok: false, error: '排除节点错误: ' + (err.message || String(err)) }, 500);
-  }
+  });
 }
 
 async function handleResetExcluded(request, env, url) {
-  try {
-    const tokenCheck = validateToken(request, url, env);
-    if (!tokenCheck.ok) return tokenCheck.response;
-
-    const bindCheck = checkBindings(env);
-    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
-
+  return withHandler(request, env, url, async () => {
     await env.SUB_STORE.delete('sub:excluded');
 
     const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    let nodes = [];
+    let preferredCount = 0;
+    let aggregateCount = 0;
     if (fixedId) {
-      await saveMergedPayload(env, fixedId);
+      const result = await saveMergedPayload(env, fixedId);
+      nodes = result.nodes;
+      preferredCount = result.preferredCount;
+      aggregateCount = result.aggregateCount;
     }
 
-    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
     return json({
       ok: true,
-      counts: {
-        preferredNodes: preferredCount,
-        aggregateNodes: aggregateCount,
-        totalNodes: preferredCount + aggregateCount,
-      },
-      preview: nodes.map((node) => ({
-        name: node.name,
-        type: node.type,
-        server: node.server,
-        port: node.port,
-        host: node.host || '',
-        sni: node.sni || '',
-      })),
+      counts: buildCounts(preferredCount, aggregateCount),
+      preview: buildPreview(nodes),
       excluded: [],
     });
-  } catch (err) {
-    return json({ ok: false, error: '重置排除列表错误: ' + (err.message || String(err)) }, 500);
-  }
+  });
 }
 
 async function handleExcludeNodes(request, env) {
-  try {
-    const tokenCheck = validateToken(request, new URL(request.url), env);
-    if (!tokenCheck.ok) return tokenCheck.response;
-
-    const bindCheck = checkBindings(env);
-    if (!bindCheck.ok) return json({ ok: false, error: bindCheck.error }, 500);
-
+  return withHandler(request, env, new URL(request.url), async () => {
     let body;
     try {
       body = await request.json();
@@ -1038,31 +989,23 @@ async function handleExcludeNodes(request, env) {
     await env.SUB_STORE.put('sub:excluded', JSON.stringify(excluded));
 
     const fixedId = await env.SUB_STORE.get('sub:fixed-id');
+    let nodes = [];
+    let preferredCount = 0;
+    let aggregateCount = 0;
     if (fixedId) {
-      await saveMergedPayload(env, fixedId);
+      const result = await saveMergedPayload(env, fixedId);
+      nodes = result.nodes;
+      preferredCount = result.preferredCount;
+      aggregateCount = result.aggregateCount;
     }
 
-    const { nodes, preferredCount, aggregateCount } = await buildMergedNodes(env);
     return json({
       ok: true,
-      counts: {
-        preferredNodes: preferredCount,
-        aggregateNodes: aggregateCount,
-        totalNodes: preferredCount + aggregateCount,
-      },
-      preview: nodes.map((node) => ({
-        name: node.name,
-        type: node.type,
-        server: node.server,
-        port: node.port,
-        host: node.host || '',
-        sni: node.sni || '',
-      })),
+      counts: buildCounts(preferredCount, aggregateCount),
+      preview: buildPreview(nodes),
       excluded,
     });
-  } catch (err) {
-    return json({ ok: false, error: '批量排除节点错误: ' + (err.message || String(err)) }, 500);
-  }
+  });
 }
 
 async function handleSub(url, env) {
@@ -1081,12 +1024,12 @@ async function handleSub(url, env) {
 
     const record = JSON.parse(raw);
     const nodes = record.nodes || [];
-    const target = (url.searchParams.get('target') || 'raw').toLowerCase();
+    const target = (url.searchParams.get('target') || TARGET_RAW).toLowerCase();
 
-    if (target === 'clash') {
+    if (target === TARGET_CLASH) {
       return text(renderClash(nodes), 200, 'text/yaml; charset=utf-8');
     }
-    if (target === 'surge') {
+    if (target === TARGET_SURGE) {
       return text(
         renderSurge(nodes, url.origin + url.pathname, env.SUB_ACCESS_TOKEN || ''),
         200,
