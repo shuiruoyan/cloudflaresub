@@ -324,6 +324,8 @@ export function renderNodeUri(node) {
       return renderVlessUri(node);
     case 'trojan':
       return renderTrojanUri(node);
+    case 'hysteria2':
+      return renderHysteria2Uri(node);
     default:
       throw new Error(`未知节点类型：${node.type}`);
   }
@@ -390,6 +392,20 @@ export function renderTrojanUri(node) {
   setQueryParam(params, 'authority', node.authority || '');
   const hash = node.name ? `#${encodeURIComponent(node.name)}` : '';
   return `trojan://${encodeURIComponent(node.password)}@${formatHostForUrl(node.server)}:${node.port}?${params.toString()}${hash}`;
+}
+
+export function renderHysteria2Uri(node) {
+  const params = new URLSearchParams();
+  if (node.tls) params.set('security', 'tls');
+  setQueryParam(params, 'sni', node.sni || '');
+  setQueryParam(params, 'fp', node.fp || '');
+  if (node.alpn?.length) params.set('alpn', node.alpn.join(','));
+  setQueryParam(params, 'ech', node.ech || '');
+  setQueryParam(params, 'obfs', node.obfs || '');
+  setQueryParam(params, 'obfs-password', node.obfsPassword || '');
+  if (node.allowInsecure) params.set('insecure', '1');
+  const hash = node.name ? `#${encodeURIComponent(node.name)}` : '';
+  return `hysteria2://${encodeURIComponent(node.password)}@${formatHostForUrl(node.server)}:${node.port}?${params.toString()}${hash}`;
 }
 
 function maybeExpandRawSubscription(inputText) {
