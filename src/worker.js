@@ -425,6 +425,51 @@ function renderClash(nodes) {
         return lines.join('\n');
       }
 
+      if (node.type === 'hysteria2') {
+        const lines = [
+          `  - name: "${escapeYaml(node.name)}"`,
+          `    type: hysteria2`,
+          `    server: ${node.server}`,
+          `    port: ${node.port}`,
+          `    password: "${escapeYaml(node.password || '')}"`,
+          `    udp: true`,
+        ];
+
+        if (node.tls) {
+          lines.push(`    tls: true`);
+        }
+
+        if (node.sni) {
+          lines.push(`    sni: "${escapeYaml(node.sni)}"`);
+        }
+
+        if (node.alpn) {
+          lines.push(`    alpn:`);
+          node.alpn.split(',').forEach((a) => {
+            lines.push(`      - "${escapeYaml(a.trim())}"`);
+          });
+        }
+
+        if (node.obfs) {
+          lines.push(`    obfs: "${escapeYaml(node.obfs)}"`);
+        }
+        if (node.obfsPassword) {
+          lines.push(`    obfs-password: "${escapeYaml(node.obfsPassword)}"`);
+        }
+
+        if (node.fp) {
+          lines.push(`    fingerprint: "${escapeYaml(node.fp)}"`);
+        }
+
+        if (node.ech) {
+          lines.push(`    ech: "${escapeYaml(node.ech)}"`);
+        }
+
+        lines.push(`    skip-cert-verify: ${node.allowInsecure ? 'true' : 'false'}`);
+
+        return lines.join('\n');
+      }
+
       return '';
     })
     .filter(Boolean);
