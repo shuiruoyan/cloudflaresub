@@ -150,10 +150,11 @@ const pageInfo = document.getElementById('pageInfo');
 const resetExcludedBtn = document.getElementById('resetExcludedBtn');
 const batchDeleteBtn = document.getElementById('batchDeleteBtn');
 const selectAll = document.getElementById('selectAll');
+const pageSizeSelect = document.getElementById('pageSizeSelect');
 
 let previewAllData = [];
 let currentPage = 1;
-const PAGE_SIZE = 20;
+let pageSize = 20;
 let excludedNames = new Set();
 
 logoutBtn.addEventListener('click', () => {
@@ -242,7 +243,7 @@ function renderPreviewRows(preview) {
 
 function renderPagination() {
   const total = previewAllData.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (totalPages <= 1) {
     pagination.classList.add('hidden');
     return;
@@ -264,10 +265,10 @@ function updateBatchDeleteButton() {
 }
 
 function applyPreviewPage() {
-  const totalPages = Math.max(1, Math.ceil(previewAllData.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(previewAllData.length / pageSize));
   if (currentPage > totalPages) currentPage = totalPages || 1;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageData = previewAllData.slice(start, start + PAGE_SIZE);
+  const start = (currentPage - 1) * pageSize;
+  const pageData = previewAllData.slice(start, start + pageSize);
   previewBody.innerHTML = renderPreviewRows(pageData);
   selectAll.checked = false;
   renderPagination();
@@ -568,11 +569,18 @@ prevPageBtn.addEventListener('click', () => {
 });
 
 nextPageBtn.addEventListener('click', () => {
-  const totalPages = Math.max(1, Math.ceil(previewAllData.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(previewAllData.length / pageSize));
   if (currentPage < totalPages) {
     currentPage++;
     applyPreviewPage();
   }
+});
+
+pageSizeSelect.addEventListener('change', () => {
+  const val = parseInt(pageSizeSelect.value, 10);
+  pageSize = isNaN(val) || val < 1 ? 20 : val;
+  currentPage = 1;
+  applyPreviewPage();
 });
 
 // Exclude / reset handlers
