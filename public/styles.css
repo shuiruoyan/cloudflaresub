@@ -1304,20 +1304,20 @@ button.warning:hover {
   color: var(--text);
 }
 
-.table-wrap th.sortable::after {
+.table-wrap th.sortable::before {
   content: '';
   display: inline-block;
   width: 0;
-  margin-left: 4px;
+  margin-right: 4px;
 }
 
-.table-wrap th.sort-asc::after {
+.table-wrap th.sort-asc::before {
   content: '▲';
   font-size: 0.65em;
   color: var(--accent);
 }
 
-.table-wrap th.sort-desc::after {
+.table-wrap th.sort-desc::before {
   content: '▼';
   font-size: 0.65em;
   color: var(--accent);
@@ -1335,10 +1335,10 @@ button.warning:hover {
 }
 
 .th-filter-icon {
-  width: 14px;
-  height: 14px;
-  padding: 5px;
-  margin: -5px;
+  width: 16px;
+  height: 16px;
+  padding: 8px;
+  margin: -8px;
   cursor: pointer;
   color: var(--muted);
   flex-shrink: 0;
