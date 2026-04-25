@@ -129,7 +129,6 @@
               name="nodeLinks"
               rows="10"
               placeholder="支持 vmess://、vless://、trojan://，一行一个。也支持直接粘贴原始 base64 订阅内容。"
-              required
             ></textarea>
             <p class="hint">支持 vmess / vless / trojan，一行一个。兼容自建 WS + TLS 写法，也支持粘贴 base64 订阅。</p>
           </div>
@@ -144,7 +143,6 @@
 104.16.1.2#HK-01
 104.17.2.3:2053#HK-02
 cf.example.com:443#US-Edge"
-              required
             ></textarea>
             <p class="hint">
               格式：<code>IP</code>、<code>IP:端口</code>、<code>域名</code>、<code>域名:端口</code>，<code>#</code> 后面写备注。不会帮你找优选 IP，只负责替换。
@@ -177,7 +175,6 @@ cf.example.com:443#US-Edge"
             name="nodeLinks"
             rows="14"
             placeholder="支持 vmess://、vless://、trojan://、hysteria2://，一行一个。也支持直接粘贴原始 base64 订阅内容。"
-            required
           ></textarea>
           <p class="hint">支持 vmess / vless / trojan / hysteria2，一行一个。兼容自建 WS + TLS 写法，也支持粘贴 base64 订阅。节点将原样聚合，名称自动追加「| 聚合」后缀。</p>
         </div>
