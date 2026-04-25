@@ -1306,9 +1306,12 @@ button.warning:hover {
 }
 
 .table-wrap {
-  overflow-x: auto;
   border-radius: 4px;
   border: 1px solid var(--card-border);
+}
+
+.table-scroll-x {
+  overflow-x: auto;
 }
 
 .table-head-wrap table,
