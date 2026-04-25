@@ -224,8 +224,8 @@ function renderPreviewRows(preview, startIndex = 1) {
     .map(
       (item, idx) => `
         <tr>
-          <td class="col-index">${startIndex + idx}</td>
           <td class="col-check"><input type="checkbox" data-select-name="${escapeHtml(item.name)}" /></td>
+          <td class="col-index">${startIndex + idx}</td>
           <td>${escapeHtml(item.name)}</td>
           <td>${escapeHtml(item.type)}</td>
           <td>${escapeHtml(item.server)}</td>

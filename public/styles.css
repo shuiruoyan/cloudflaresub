@@ -1243,6 +1243,7 @@ button.warning:hover {
   display: inline-flex;
   align-items: center;
   line-height: 1;
+  margin-bottom: 0;
 }
 
 .page-size select {
