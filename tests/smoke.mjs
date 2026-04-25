@@ -9,6 +9,8 @@ import {
   renderClashSubscription,
   renderRawSubscription,
   renderSurgeSubscription,
+  renderNodeUri,
+  SUPPORTED_PROTOCOLS,
 } from '../src/core.js';
 
 const vmess = 'vmess://ewogICJ2IjogIjIiLAogICJwcyI6ICJkZW1vLXdzLXRscyIsCiAgImFkZCI6ICJlZGdlLmV4YW1wbGUuY29tIiwKICAicG9ydCI6ICI0NDMiLAogICJpZCI6ICIwMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLAogICJzY3kiOiAiYXV0byIsCiAgIm5ldCI6ICJ3cyIsCiAgInRscyI6ICJ0bHMiLAogICJwYXRoIjogIi93cyIsCiAgImhvc3QiOiAiZWRnZS5leGFtcGxlLmNvbSIsCiAgInNuaSI6ICJlZGdlLmV4YW1wbGUuY29tIiwKICAiZnAiOiAiY2hyb21lIiwKICAiYWxwbiI6ICJoMixodHRwLzEuMSIKfQ==';
@@ -112,5 +114,54 @@ const clashGrpc = renderClashSubscription([grpcNodes[0]]);
 assert.match(clashGrpc, /grpc-opts:/);
 assert.match(clashGrpc, /grpc-service-name:/);
 assert.match(clashGrpc, /authority:/);
+
+// Test Hysteria2 parsing with full params
+const hysteria2Uri = 'hysteria2://AMM2wPMO7l@xui2.songwh.top:19127?security=tls&fp=chrome&alpn=h3&ech=AGL%2BDQBeAAAgACAY93wNf3pOPKE%2BxZ9OwdPUo98kAPksXrwUgMvq2trNegAkAAEAAQABAAIAAQADAAIAAQACAAIAAgADAAMAAQADAAIAAwADAA94dWkyLnNvbmd3aC50b3AAAA%3D%3D&sni=xui2.songwh.top&obfs=salamander&obfs-password=7DyY9YXAqFL9hG-Vqb3i#%E6%96%B0%E5%8A%A0%E5%9D%A1-rabis-hy2-1';
+const { nodes: hy2Nodes, warnings: hy2Warnings } = parseNodeLinks(hysteria2Uri);
+assert.equal(hy2Nodes.length, 1, 'should parse 1 hysteria2 node');
+assert.equal(hy2Warnings.length, 0, 'should have no warnings');
+const hy2 = hy2Nodes[0];
+assert.equal(hy2.type, 'hysteria2');
+assert.equal(hy2.server, 'xui2.songwh.top');
+assert.equal(hy2.port, 19127);
+assert.equal(hy2.password, 'AMM2wPMO7l');
+assert.equal(hy2.tls, true);
+assert.equal(hy2.sni, 'xui2.songwh.top');
+assert.equal(hy2.fp, 'chrome');
+assert.deepEqual(hy2.alpn, ['h3']);
+assert.equal(hy2.ech, 'AGL+DQBeAAAgACAY93wNf3pOPKE+xZ9OwdPUo98kAPksXrwUgMvq2trNegAkAAEAAQABAAIAAQADAAIAAQACAAIAAgADAAMAAQADAAIAAwADAA94dWkyLnNvbmd3aC50b3AAAA==');
+assert.equal(hy2.obfs, 'salamander');
+assert.equal(hy2.obfsPassword, '7DyY9YXAqFL9hG-Vqb3i');
+assert.equal(hy2.allowInsecure, false);
+assert.equal(hy2.name, '新加坡-rabis-hy2-1');
+
+// Test SUPPORTED_PROTOCOLS includes hysteria2
+assert.ok(SUPPORTED_PROTOCOLS.includes('hysteria2'), 'SUPPORTED_PROTOCOLS should include hysteria2');
+
+// Test Hysteria2 Raw round-trip
+const hy2Raw = renderNodeUri(hy2);
+assert.ok(hy2Raw.startsWith('hysteria2://'), 'raw should start with hysteria2://');
+const { nodes: hy2Reparsed } = parseNodeLinks(hy2Raw);
+assert.equal(hy2Reparsed[0].type, 'hysteria2');
+assert.equal(hy2Reparsed[0].server, hy2.server);
+assert.equal(hy2Reparsed[0].port, hy2.port);
+assert.equal(hy2Reparsed[0].password, hy2.password);
+assert.equal(hy2Reparsed[0].sni, hy2.sni);
+
+// Test Hysteria2 Clash rendering
+const hy2Clash = renderClashSubscription([hy2]);
+assert.match(hy2Clash, /type: hysteria2/);
+assert.match(hy2Clash, /password: "AMM2wPMO7l"/);
+assert.match(hy2Clash, /obfs: "salamander"/);
+assert.match(hy2Clash, /obfs-password: "7DyY9YXAqFL9hG-Vqb3i"/);
+assert.match(hy2Clash, /client-fingerprint: "chrome"/);
+assert.match(hy2Clash, /servername: "xui2\.songwh\.top"/);
+
+// Test minimal Hysteria2 URI (defaults)
+const hy2Minimal = 'hysteria2://pass@example.com:443#minimal';
+const { nodes: hy2MinNodes } = parseNodeLinks(hy2Minimal);
+assert.equal(hy2MinNodes[0].tls, false);
+assert.equal(hy2MinNodes[0].port, 443);
+assert.deepEqual(hy2MinNodes[0].alpn, []);
 
 console.log('smoke test passed');
