@@ -1062,6 +1062,10 @@ button.warning:hover:not(:disabled) {
   font-size: 0.8rem;
 }
 
+.url-actions button[data-copy-target] {
+  min-width: 5.5em;
+}
+
 
 /* ===== Warning ===== */
 .warning {
