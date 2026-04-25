@@ -1444,6 +1444,41 @@ button.warning:hover {
   color: var(--muted);
 }
 
+.preview-empty-row td {
+  border-bottom: none;
+  padding: 48px 16px;
+}
+
+.preview-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.preview-empty-content svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.35;
+  stroke-width: 1.2;
+}
+
+.preview-empty-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.preview-empty-content span {
+  font-size: 0.8rem;
+  opacity: 0.45;
+}
+
 /* ===== Modal ===== */
 .modal {
   position: fixed;

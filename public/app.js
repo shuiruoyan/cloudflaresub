@@ -255,6 +255,10 @@ function renderPreviewRows(preview, startIndex = 1) {
 function renderPagination() {
   const displayData = filterAndSortData();
   const total = displayData.length;
+  if (total === 0) {
+    pagination.classList.add('hidden');
+    return;
+  }
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   pagination.classList.remove('hidden');
   pageInfo.textContent = `${currentPage} / ${totalPages}`;
@@ -300,7 +304,23 @@ function applyPreviewPage() {
   if (currentPage > totalPages) currentPage = totalPages || 1;
   const start = (currentPage - 1) * pageSize;
   const pageData = displayData.slice(start, start + pageSize);
-  previewBody.innerHTML = renderPreviewRows(pageData, start + 1);
+  if (displayData.length === 0) {
+    previewBody.innerHTML = `
+      <tr class="preview-empty-row">
+        <td colspan="9">
+          <div class="preview-empty-content">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <p>未找到匹配的节点</p>
+            <span>尝试调整过滤条件</span>
+          </div>
+        </td>
+      </tr>`;
+    selectAll.checked = false;
+    selectAll.disabled = true;
+  } else {
+    previewBody.innerHTML = renderPreviewRows(pageData, start + 1);
+    selectAll.disabled = false;
+  }
   selectAll.checked = false;
   renderPagination();
   updateBatchDeleteButton();
