@@ -271,7 +271,7 @@ cf.example.com:443#US-Edge"
             </button>
             <button type="button" class="client-tab" data-target="surgeUrl">
               <div class="tab-icon"><img src="/icons/surge.svg" alt="" /></div>
-              <span class="tab-name">Surge</span>
+              <span class="tab-name">Surge <span class="tab-hint-mark" data-tooltip="Surge 格式当前支持 VMess / Trojan / Hysteria2 节点导出；VLESS 节点可能不兼容。">?</span></span>
               <span class="tab-desc">Profile</span>
             </button>
           </div>
@@ -286,7 +286,6 @@ cf.example.com:443#US-Edge"
               <button type="button" class="secondary" data-qrcode-target="activeUrl"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>二维码</button>
               <button id="rotateUrlBtn" type="button" class="secondary warning"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>更新订阅URL</button>
             </div>
-            <p class="hint url-hint">Surge 格式当前支持 VMess / Trojan / Hysteria2 节点导出；VLESS 节点可能不兼容。</p>
           </div>
 
           <input id="autoUrl" class="hidden" readonly />
@@ -296,101 +295,102 @@ cf.example.com:443#US-Edge"
           <input id="rocketUrl" class="hidden" readonly />
         </div>
 
-        <div id="previewSection" class="preview-wrap hidden">
-          <div class="preview-head">
-            <h3>节点预览</h3>
+      </section>
+
+      <section id="previewSection" class="preview-wrap card hidden">
+        <div class="preview-head">
+          <h3>节点预览</h3>
+        </div>
+        <div class="preview-toolbar">
+          <div class="toolbar-left">
+            <button id="batchDeleteBtn" type="button" class="btn-danger small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg><span class="btn-label">批量删除</span></button>
+            <button id="resetExcludedBtn" type="button" class="secondary small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span class="btn-label">重置排除</span></button>
           </div>
-          <div class="preview-toolbar">
-            <div class="toolbar-left">
-              <button id="batchDeleteBtn" type="button" class="btn-danger small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg><span class="btn-label">批量删除</span></button>
-              <button id="resetExcludedBtn" type="button" class="secondary small"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span class="btn-label">重置排除</span></button>
+          <div id="pagination" class="pagination hidden">
+            <button type="button" id="prevPage" class="text-btn"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>上一页</button>
+            <span id="pageInfo" class="page-info"></span>
+            <button type="button" id="nextPage" class="text-btn">下一页<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+            <div class="page-size">
+              <label for="pageSizeSelect">每页</label>
+              <select id="pageSizeSelect">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="1000">全部</option>
+              </select>
             </div>
-            <div id="pagination" class="pagination hidden">
-              <button type="button" id="prevPage" class="text-btn"><svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>上一页</button>
-              <span id="pageInfo" class="page-info"></span>
-              <button type="button" id="nextPage" class="text-btn">下一页<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
-              <div class="page-size">
-                <label for="pageSizeSelect">每页</label>
-                <select id="pageSizeSelect">
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                  <option value="100">100</option>
-                  <option value="1000">全部</option>
-                </select>
-              </div>
-            </div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <colgroup>
-                <col class="col-check" />
-                <col class="col-index" />
-                <col class="col-name" />
-                <col class="col-type" />
-                <col class="col-server" />
-                <col class="col-port" />
-                <col class="col-host" />
-                <col class="col-sni" />
-                <col class="col-action" />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
-                  <th class="col-index">#</th>
-                  <th class="sortable" data-sort="name">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>名称</span>
-                      <svg class="th-filter-icon" data-filter="name" aria-label="过滤名称" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="name">
-                      <input type="text" placeholder="搜索名称..." />
-                    </div>
-                  </th>
-                  <th class="sortable" data-sort="type">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>类型</span>
-                      <svg class="th-filter-icon" data-filter="type" aria-label="过滤类型" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="type">
-                      <select>
-                        <option value="">全部</option>
-                        <option value="vmess">vmess</option>
-                        <option value="vless">vless</option>
-                        <option value="trojan">trojan</option>
-                        <option value="hysteria2">hysteria2</option>
-                      </select>
-                    </div>
-                  </th>
-                  <th class="sortable" data-sort="server">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>服务器</span>
-                      <svg class="th-filter-icon" data-filter="server" aria-label="过滤服务器" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="server">
-                      <input type="text" placeholder="搜索服务器..." />
-                    </div>
-                  </th>
-                  <th class="sortable" data-sort="port">
-                    <div class="th-content">
-                      <span class="sort-indicator"></span>
-                      <span>端口</span>
-                      <svg class="th-filter-icon" data-filter="port" aria-label="过滤端口" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                    </div>
-                    <div class="th-filter-popover hidden" data-filter-popover="port">
-                      <input type="text" placeholder="搜索端口..." />
-                    </div>
-                  </th>
-                  <th>Host</th>
-                  <th>SNI</th>
-                  <th class="col-action">操作</th>
-                </tr>
-              </thead>
-              <tbody id="previewBody"></tbody>
-            </table>
-          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <colgroup>
+              <col class="col-check" />
+              <col class="col-index" />
+              <col class="col-name" />
+              <col class="col-type" />
+              <col class="col-server" />
+              <col class="col-port" />
+              <col class="col-host" />
+              <col class="col-sni" />
+              <col class="col-action" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="selectAll" title="全选" /></th>
+                <th class="col-index">#</th>
+                <th class="sortable" data-sort="name">
+                  <div class="th-content">
+                    <span class="sort-indicator"></span>
+                    <span>名称</span>
+                    <svg class="th-filter-icon" data-filter="name" aria-label="过滤名称" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="th-filter-popover hidden" data-filter-popover="name">
+                    <input type="text" placeholder="搜索名称..." />
+                  </div>
+                </th>
+                <th class="sortable" data-sort="type">
+                  <div class="th-content">
+                    <span class="sort-indicator"></span>
+                    <span>类型</span>
+                    <svg class="th-filter-icon" data-filter="type" aria-label="过滤类型" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="th-filter-popover hidden" data-filter-popover="type">
+                    <select>
+                      <option value="">全部</option>
+                      <option value="vmess">vmess</option>
+                      <option value="vless">vless</option>
+                      <option value="trojan">trojan</option>
+                      <option value="hysteria2">hysteria2</option>
+                    </select>
+                  </div>
+                </th>
+                <th class="sortable" data-sort="server">
+                  <div class="th-content">
+                    <span class="sort-indicator"></span>
+                    <span>服务器</span>
+                    <svg class="th-filter-icon" data-filter="server" aria-label="过滤服务器" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="th-filter-popover hidden" data-filter-popover="server">
+                    <input type="text" placeholder="搜索服务器..." />
+                  </div>
+                </th>
+                <th class="sortable" data-sort="port">
+                  <div class="th-content">
+                    <span class="sort-indicator"></span>
+                    <span>端口</span>
+                    <svg class="th-filter-icon" data-filter="port" aria-label="过滤端口" aria-expanded="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="th-filter-popover hidden" data-filter-popover="port">
+                    <input type="text" placeholder="搜索端口..." />
+                  </div>
+                </th>
+                <th>Host</th>
+                <th>SNI</th>
+                <th class="col-action">操作</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody"></tbody>
+          </table>
         </div>
       </section>
     </main>
