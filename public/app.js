@@ -578,7 +578,10 @@ document.addEventListener('click', async (event) => {
   if (deleteBtn) {
     const name = deleteBtn.dataset.excludeName;
     if (!name) return;
-    excludeNode(name);
+    const confirmed = await showConfirm(`确定要删除节点 "${name}" 吗？`);
+    if (confirmed) {
+      excludeNode(name);
+    }
     return;
   }
 
