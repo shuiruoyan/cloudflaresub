@@ -698,7 +698,7 @@ button.small .btn-icon {
   height: 15px;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--accent-dim);
@@ -717,7 +717,7 @@ button.secondary {
   border: 1px solid var(--card-border);
 }
 
-button.secondary:hover {
+button.secondary:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--text);
   box-shadow: none;
@@ -735,7 +735,7 @@ button.warning {
   border: 1px solid rgba(201, 160, 76, 0.3);
 }
 
-button.warning:hover {
+button.warning:hover:not(:disabled) {
   background: rgba(201, 160, 76, 0.25);
   border-color: rgba(201, 160, 76, 0.45);
   box-shadow: 0 4px 12px rgba(201, 160, 76, 0.1);
@@ -1686,7 +1686,7 @@ button.warning:hover {
   border: 1px solid var(--card-border);
 }
 
-.confirm-actions button.secondary:hover {
+.confirm-actions button.secondary:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--text);
 }
