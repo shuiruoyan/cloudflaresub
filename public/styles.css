@@ -799,27 +799,6 @@ button.warning:hover:not(:disabled) {
   margin-top: 28px;
 }
 
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: end;
-  margin-bottom: 4px;
-}
-
-.section-head h2 {
-  margin: 0 0 4px;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.section-desc {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 0.86rem;
-  line-height: 1.6;
-}
-
 /* ===== URL Status ===== */
 .url-status {
   display: flex;
