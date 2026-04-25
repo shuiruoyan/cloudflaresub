@@ -1263,6 +1263,26 @@ button.warning:hover {
   line-height: 1;
 }
 
+.text-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.84rem;
+  padding: 4px 8px;
+  height: auto;
+  line-height: 1.4;
+}
+
+.text-btn:hover {
+  color: var(--text);
+  background: rgba(88, 96, 112, 0.08);
+}
+
+.text-btn:disabled {
+  opacity: 0.35;
+  background: transparent;
+}
+
 .page-size label {
   display: inline-flex;
   align-items: center;
